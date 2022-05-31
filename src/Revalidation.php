@@ -15,12 +15,16 @@ class Revalidation
                 return;
             }
 
-            self::revalidate($post);
+            wp_schedule_single_event(time(), 'on_demand_revalidation_on_post_update', [$post]);
         }, 10, 3);
 
         add_action('transition_post_status', function ($new_status, $old_status, $post) {
-            self::revalidate($post);
+            wp_schedule_single_event(time(), 'on_demand_revalidation_on_post_update', [$post]);
         }, 10, 3);
+
+        add_action('on_demand_revalidation_on_post_update', function ($post) {
+            self::revalidate($post);
+        }, 10, 1);
     }
 
     public static function revalidate($post)
