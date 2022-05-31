@@ -1,0 +1,16 @@
+{
+    "name": "gdidentity/on-demand-revalidation",
+    "type": "wordpress-plugin",
+    "autoload": {
+        "psr-4": {
+            "OnDemandRevalidation\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "GD IDENTITY",
+            "email": "jakub.bebjak@gdidentity.sk"
+        }
+    ],
+    "require": {}
+}
