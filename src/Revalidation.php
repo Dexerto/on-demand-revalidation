@@ -17,6 +17,10 @@ class Revalidation
 
             self::revalidate($post);
         }, 10, 3);
+
+        add_action('transition_post_status', function ($new_status, $old_status, $post) {
+            self::revalidate($post);
+        }, 10, 3);
     }
 
     public static function revalidate($post)
@@ -30,7 +34,7 @@ class Revalidation
 
         $paths = [];
 
-        if (!empty($settings['revalidate_homepage'])) {
+        if (isset($settings['revalidate_homepage'])) {
             $paths[] = '/';
         }
 

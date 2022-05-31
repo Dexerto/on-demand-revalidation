@@ -95,7 +95,7 @@ class Admin
                 function () {
                     $field = 'revalidate_homepage';
                     $option = get_option(self::$option);
-                    echo '<input type="checkbox" id="'.$field.'" name="'.self::$option.'['.$field.']" value="1"' . checked('1', $option[$field], false) . '/>';
+                    echo '<input type="checkbox" id="'.$field.'" name="'.self::$option.'['.$field.']" value="1"' . checked('1', isset($option[$field]), false) . '/>';
                     echo '<label for="'.$field.'">Revalidate Homepage on post update</label>';
                 },
                 self::$option,
