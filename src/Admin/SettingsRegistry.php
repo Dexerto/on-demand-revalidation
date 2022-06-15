@@ -6,11 +6,13 @@ namespace OnDemandRevalidation\Admin;
 /**
  * Class SettingsRegistry
  *
- * This settings class is based on the WordPress Settings API Class v1.3 from Tareq Hasan of WeDevs
+ * This settings class is based on the WordPress Settings API Class v1.3 from Tareq Hasan of WeDevs and WPGraphQL SettingsRegistry
  *
  * @see     https://github.com/tareq1988/wordpress-settings-api-class
  * @author  Tareq Hasan <tareq@weDevs.com>
  * @link    https://tareq.co Tareq Hasan
+ *
+ * @see     https://github.com/wp-graphql/wp-graphql/blob/develop/src/Admin/Settings/SettingsRegistry.php
  */
 class SettingsRegistry {
 
@@ -525,6 +527,7 @@ class SettingsRegistry {
 
 		// Ignore phpstan as this is providing an array as expected
 		// @phpstan-ignore-next-line
+		// phpcs:ignore
 		echo wp_dropdown_pages( $clean_args );
 	}
 

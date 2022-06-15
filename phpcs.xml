@@ -50,6 +50,16 @@
 		<exclude name="Squiz.Commenting"/>
 	</rule>
 
+	<rule ref="WordPressVIPMinimum">
+		<exclude name="WordPress.WP.AlternativeFunctions"/>
+		<exclude name="WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown"/>
+		<exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable"/>
+		<exclude name="WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts"/>
+		<exclude name="WordPress.DB.SlowDBQuery.slow_db_query_meta_query"/>
+		<exclude name="Squiz.PHP.CommentedOutCode.Found"/>
+		<exclude name="Generic.NamingConventions.ConstructorName.OldStyle"/>
+	</rule>
+
 	<!-- Tests for PHP version compatibility -->
 	<rule ref="PHPCompatibilityWP">
 		<config name="testVersion" value="5.6-"/>
