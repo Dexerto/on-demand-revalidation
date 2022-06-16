@@ -1,6 +1,7 @@
 {
     "name": "gdidentity/on-demand-revalidation",
     "type": "wordpress-plugin",
+    "license": "GPL-3.0-or-later",
     "autoload": {
         "psr-4": {
             "OnDemandRevalidation\\": "src/"
