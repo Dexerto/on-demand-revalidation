@@ -1,0 +1,43 @@
+name: Deploy to WordPress.org
+on:
+  push:
+    tags:
+    - '*'
+jobs:
+  tag:
+    name: New release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          extensions: mbstring, intl
+          tools: composer
+      - name: Install PHP dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+      - name: WordPress Plugin Deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SLUG: on-demand-revalidation
+      - name: Create Artifact
+        run: |
+          mkdir plugin-build
+          composer archive -vvv --format=zip --file="plugin-build/on-demand-revalidation"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: on-demand-revalidation
+          path: plugin-build/on-demand-revalidation.zip
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: plugin-build/on-demand-revalidation.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
