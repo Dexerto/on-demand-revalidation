@@ -3,7 +3,7 @@ Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 4.7
 Tested up to: 6.0
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 Requires PHP: 5.6
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -12,7 +12,7 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Next.js On-Demand Revalidation for Wordpress on the post update, revalidate specific paths on the post update.
 
-Feel free to create PR to https://github.com/gdidentity/on-demand-revalidation.
+Feel free to create PR to [plugin Github repo](https://github.com/gdidentity/on-demand-revalidation).
 
 == Installation ==
 
@@ -25,5 +25,5 @@ Feel free to create PR to https://github.com/gdidentity/on-demand-revalidation.
 
 == Changelog ==
 
-= 1.0.4 =
+= 1.0.5 =
 - publish plugin
