@@ -3,7 +3,7 @@ Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 4.7
 Tested up to: 6.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 Requires PHP: 5.6
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -18,7 +18,7 @@ Next.js On-Demand Revalidation for Wordpress on the post update, revalidate spec
 2. Click the “Install Now” button, followed by "Activate".
 3. Add Next.js URL and Revalidate Secret Key in the Settings -> Next.js On-Demand Revalidation
 4. In your Next.js project add new file `/pages/api/revalidate.ts` with this code:
-`
+```
 import { NextApiRequest, NextApiResponse } from "next"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -56,10 +56,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({ message: err.message })
     }
 }
-`
+```
 5. Add `REVALIDATE_SECRET_KEY` env variable to your Next.js with Revalidate Secret Key value you added in the Plugin Settings.
+
+=== Development ===
+
+Feel free to create PR to https://github.com/gdidentity/on-demand-revalidation.
 
 == Changelog ==
 
-= 1.0.2 =
+
+= 1.0.3 =
 - publish plugin
