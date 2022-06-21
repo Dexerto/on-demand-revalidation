@@ -175,7 +175,7 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 			} ?>
 			<div class="notice notice-error">
 				<p>
-					<?php esc_html_e( 'Purge Cache appears to have been installed without its dependencies. It will not work properly until dependencies are installed. This likely means you have cloned Next.js On-Demand Revalidation from Github and need to run the command `composer install`.', 'on-demand-revalidation' ); ?>
+					<?php esc_html_e( 'On-Demand Revalidation appears to have been installed without its dependencies. It will not work properly until dependencies are installed. This likely means you have cloned Next.js On-Demand Revalidation from Github and need to run the command `composer install`.', 'on-demand-revalidation' ); ?>
 				</p>
 			</div>
 			<?php
