@@ -128,7 +128,7 @@ class SettingsRegistry {
 		 * @param string $field_name   The name of the field (unfilterable in the config)
 		 * @param string $section      The slug of the section the field is registered to
 		 */
-		$field = apply_filters( 'graphql_setting_field_config', $field_config, $field_name, $section );
+		$field = apply_filters( 'on_demand_revalidation_setting_field_config', $field_config, $field_name, $section );
 
 		// Add the field name back after the filter has been applied
 		$field['name'] = $field_name;
@@ -152,14 +152,14 @@ class SettingsRegistry {
 	function admin_init() {
 
 		// Action that fires when settings are being initialized
-		do_action( 'graphql_init_settings', $this );
+		do_action( 'on_demand_revalidation_init_settings', $this );
 
 		/**
 		 * Filter the settings sections
 		 *
 		 * @param array $setting_sections The registered settings sections
 		 */
-		$setting_sections = apply_filters( 'graphql_settings_sections', $this->settings_sections );
+		$setting_sections = apply_filters( 'on_demand_revalidation_settings_sections', $this->settings_sections );
 
 		foreach ( $setting_sections as $id => $section ) {
 			if ( false === get_option( $id ) ) {
@@ -668,10 +668,10 @@ class SettingsRegistry {
 				<div id="<?php echo esc_attr( $id ); ?>" class="group" style="display: none;">
 					<form method="post" action="options.php">
 						<?php
-						// do_action( 'graphql_settings_form_top', $form );
+						// do_action( 'on_demand_revalidation_settings_form_top', $form );
 						settings_fields( $id );
 						do_settings_sections( $id );
-						// do_action( 'graphql_settings_form_bottom', $form );
+						// do_action( 'on_demand_revalidation_settings_form_bottom', $form );
 						if ( isset( $this->settings_fields[ $id ] ) ) :
 							?>
 							<div style="padding-left: 10px">
