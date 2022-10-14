@@ -40,7 +40,14 @@ class Revalidation {
 			$paths[] = '/';
 		}
 
-		$page_path = "/$post->post_name";
+        $post_permalink = get_permalink( $post );
+		$parse_permalink = parse_url( $post_permalink );
+        $page_path = '/';
+
+        if( isset($parse_permalink['path']) ) {
+            $page_path = $parse_permalink['path'];
+        }
+
 		$paths[]   = substr( $page_path, -1 ) === '/' ? substr( $page_path, 0, -1 ) : $page_path;
 
 		$revalidate_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
@@ -99,6 +106,7 @@ class Revalidation {
 		});
 
 		add_action('wp_ajax_revalidation-post-update-test', function () {
+
 			if ( ! current_user_can( 'edit_posts' ) ) {
 				$response = new WP_Error( 'rest_forbidden', __( 'You cannot edit posts.', 'on-demand-revalidation' ), [ 'status' => 401 ] );
 			}
