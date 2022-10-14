@@ -3,7 +3,7 @@ Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 4.7
 Tested up to: 6.0
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 Requires PHP: 5.6
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -24,6 +24,9 @@ Feel free to create PR to [plugin Github repo](https://github.com/gdidentity/on-
 
 
 == Changelog ==
+
+= 1.0.7 =
+- fix: address conflicts with wpgraphql plugin. Thank you @pressoholics!
 
 = 1.0.6 =
 - add filter on_demand_revalidation_paths
