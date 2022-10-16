@@ -36,23 +36,23 @@ class Revalidation {
 
 		$paths = [];
 
-		if ( Settings::get( 'revalidate_homepage', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
-			$paths[] = '/';
-		}
+        if ( Settings::get( 'revalidate_homepage', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
+            $paths[] = '/';
+        }
 
-        $post_permalink = get_permalink( $post );
-		$parse_permalink = parse_url( $post_permalink );
-        $page_path = '/';
+        $post_permalink  = get_permalink( $post );
+        $parse_permalink = parse_url( $post_permalink );
+        $page_path       = '/';
 
-        if( isset($parse_permalink['path']) ) {
+        if ( isset($parse_permalink['path']) ) {
             $page_path = $parse_permalink['path'];
         }
 
-		$paths[]   = substr( $page_path, -1 ) === '/' ? substr( $page_path, 0, -1 ) : $page_path;
+        $paths[] = substr( $page_path, -1 ) === '/' ? substr( $page_path, 0, -1 ) : $page_path;
 
-		$revalidate_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
-		$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
-		$revalidate_paths = Helpers::rewritePaths( $revalidate_paths, $post );
+        $revalidate_paths = Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
+        $revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
+        $revalidate_paths = Helpers::rewritePaths( $revalidate_paths, $post );
 
 		if ( $revalidate_paths ) {
 			foreach ( $revalidate_paths as $path ) {
