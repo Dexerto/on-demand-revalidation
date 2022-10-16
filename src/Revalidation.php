@@ -44,7 +44,7 @@ class Revalidation {
 		$parse_permalink = parse_url( $post_permalink );
 		$page_path       = '/';
 
-		if ( isset($parse_permalink['path']) ) {
+		if ( isset( $parse_permalink['path'] ) ) {
 			$page_path = $parse_permalink['path'];
 		}
 
