@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         const revalidatePaths = paths
             .filter((path: string) => path.startsWith('/'))
-            .map((path: string) => res.unstable_revalidate(
+            .map((path: string) => res.revalidate(
                 path,
                 { unstable_onlyGenerated: false }
             ));
