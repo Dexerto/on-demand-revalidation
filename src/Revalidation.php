@@ -77,7 +77,7 @@ class Revalidation {
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		$response_data = ( ! is_wp_error( $response ) ) ? $body : null;
+		$response_data = ( ! is_wp_error( $response ) ) ? $body : $response;
 
 		return $response_data;
 

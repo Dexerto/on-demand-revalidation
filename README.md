@@ -25,17 +25,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(412).json({ message: 'No paths' })
     }
 
+    const correctPaths = paths.filter((path: string) => path.startsWith('/'))
+
     try {
-        const revalidatePaths = paths
-            .filter((path: string) => path.startsWith('/'))
-            .map((path: string) => res.revalidate(
-                path,
-                { unstable_onlyGenerated: false }
-            ));
+        const revalidatePaths = correctPaths.map((path: string) => res.revalidate(
+            path,
+            { unstable_onlyGenerated: false }
+        ));
 
         await Promise.all(revalidatePaths);
 
-        return res.json({ revalidated: true, message: 'Paths revalidated' })
+        // Logging for debugging purposes only
+        console.log(`${new Date().toJSON()} - Paths revalidated: ${correctPaths.join(', ')}`)
+
+        return res.json({
+            revalidated: true,
+            message: `Paths revalidated: ${correctPaths.join(', ')}`
+        })
 
     } catch (err) {
 
@@ -44,3 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 ```
 - Add `REVALIDATE_SECRET_KEY` env variable to your Next.js with Revalidate Secret Key value you added in the Plugin Settings.
+___
+
+## Troubleshooting
+
+-  Revalidation on post update is not working: [discussion](https://github.com/wpengine/faustjs/discussions/842)

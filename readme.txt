@@ -2,8 +2,8 @@
 Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 4.7
-Tested up to: 6.0
-Stable tag: 1.0.8
+Tested up to: 6.1
+Stable tag: 1.0.9
 Requires PHP: 5.6
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -24,6 +24,9 @@ Feel free to create PR to [plugin Github repo](https://github.com/gdidentity/on-
 
 
 == Changelog ==
+
+= 1.0.9 =
+- Update readme, minors. Thank you @gibix!
 
 = 1.0.8 =
 - Fix: ensure correct deep paths for posts. Thank you @pressoholics!
