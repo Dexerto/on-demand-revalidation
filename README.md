@@ -54,4 +54,4 @@ ___
 
 ## Troubleshooting
 
--  Revalidation on post update is not working: [discussion](https://github.com/wpengine/faustjs/discussions/842)
+-  Revalidation on post update is not working: [Next.js](https://github.com/wpengine/faustjs/discussions/842), [WP-Cron](https://github.com/gdidentity/on-demand-revalidation/issues/4#issuecomment-1304602677)
