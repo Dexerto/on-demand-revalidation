@@ -2,6 +2,7 @@
 
 namespace OnDemandRevalidation;
 
+use CPurgeCache;
 use OnDemandRevalidation\Admin\Settings;
 use OnDemandRevalidation\Helpers;
 use WP_Error;
@@ -78,6 +79,11 @@ class Revalidation {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		$response_data = ( ! is_wp_error( $response ) ) ? $body : $response;
+
+
+		if ( class_exists( 'CPurgeCache' ) ) {
+			\CPurgeCache\Purge::purge( $post );
+		}
 
 		return $response_data;
 
