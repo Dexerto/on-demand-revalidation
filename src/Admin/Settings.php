@@ -84,9 +84,9 @@ class Settings {
 				'default' => 'on',
 			],
 			[
-				'name'    => 'disable_cron',
-				'desc'    => __( "<b>Disable scheduled revalidation.</b> Revalidation triggered immediately without using WP-Cron. It'll slow down post update.", 'on-demand-revalidation' ),
-				'type'    => 'checkbox',
+				'name' => 'disable_cron',
+				'desc' => __( "<b>Disable scheduled revalidation.</b> Revalidation triggered immediately without using WP-Cron. It'll slow down post update.", 'on-demand-revalidation' ),
+				'type' => 'checkbox',
 			],
 			[
 				'name'        => 'revalidate_paths',
