@@ -2,7 +2,6 @@
 
 namespace OnDemandRevalidation;
 
-use CPurgeCache;
 use OnDemandRevalidation\Admin\Settings;
 use OnDemandRevalidation\Helpers;
 use WP_Error;
@@ -15,16 +14,24 @@ class Revalidation {
 				return;
 			}
 
-			wp_schedule_single_event( time(), 'on_demand_revalidation_on_post_update', [ $post ] );
+			self::revalidatePost( $post );
 		}, 10, 3);
 
 		add_action('transition_post_status', function ( $new_status, $old_status, $post ) {
-			wp_schedule_single_event( time(), 'on_demand_revalidation_on_post_update', [ $post ] );
+			self::revalidatePost( $post );
 		}, 10, 3);
 
 		add_action('on_demand_revalidation_on_post_update', function ( $post ) {
 			self::revalidate( $post );
 		}, 10, 1);
+	}
+
+	static function revalidatePost( $post ) {
+		if ( Settings::get( 'disable_cron', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
+			self::revalidate( $post );
+		} else {
+			wp_schedule_single_event( time(), 'on_demand_revalidation_on_post_update', [ $post ] );
+		}
 	}
 
 	public static function revalidate( $post ) {
