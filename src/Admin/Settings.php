@@ -128,6 +128,7 @@ class Settings {
 		<div class="wrap">
 			<?php
 			echo '<h1>Next.js On-Demand Revalidation</h1>';
+			echo ON_DEMAND_REVALIDATION_VERSION;
 			$this->settings_api->show_navigation();
 			$this->settings_api->show_forms();
 			?>

@@ -72,7 +72,10 @@ class Revalidation {
 
 		$paths = apply_filters( 'on_demand_revalidation_paths', $paths, $post );
 
-		$data = json_encode( [ 'paths' => $paths ] );
+		$data = json_encode( [
+			'paths'  => $paths,
+			'postId' => $post->ID,
+		] );
 
 		$response = wp_remote_request( "$frontend_url/api/revalidate", [
 			'method'  => 'PUT',
