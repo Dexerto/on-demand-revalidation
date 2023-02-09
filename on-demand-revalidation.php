@@ -113,7 +113,11 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 		 */
 		private function setup_constants(): void {
 
-			// Plugin version.
+            if (!function_exists('get_plugin_data')) {
+                require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+            }
+
+            // Plugin version.
 			if ( ! defined( 'ON_DEMAND_REVALIDATION_VERSION' ) ) {
 				define( 'ON_DEMAND_REVALIDATION_VERSION', get_plugin_data( __FILE__ )['Version'] );
 			}
