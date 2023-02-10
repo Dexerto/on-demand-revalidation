@@ -6,7 +6,7 @@
  * Plugin URI:          https://wordpress.org/plugins/on-demand-revalidation
  * GitHub Plugin URI:   https://github.com/gdidentity/on-demand-revalidation
  * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths on the post update.
- * Version:             1.0.15
+ * Version:             1.0.16
  * Author:              GD IDENTITY
  * Author URI:          https://gdidentity.sk
  * Text Domain:         on-demand-revalidation
@@ -113,11 +113,11 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 		 */
 		private function setup_constants(): void {
 
-            if (!function_exists('get_plugin_data')) {
-                require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-            }
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+			}
 
-            // Plugin version.
+			// Plugin version.
 			if ( ! defined( 'ON_DEMAND_REVALIDATION_VERSION' ) ) {
 				define( 'ON_DEMAND_REVALIDATION_VERSION', get_plugin_data( __FILE__ )['Version'] );
 			}
