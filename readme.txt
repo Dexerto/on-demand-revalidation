@@ -24,6 +24,8 @@ Feel free to create PR to [plugin Github repo](https://github.com/gdidentity/on-
 
 
 == Changelog ==
+= 1.1.0 =
+- Allow custom taxonomies revalidation from @humet
 
 = 1.0.16 =
 - fix from @slimzc

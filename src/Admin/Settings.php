@@ -91,8 +91,8 @@ class Settings {
 			[
 				'name'        => 'revalidate_paths',
 				'label'       => __( 'Additional paths to revalidate on Post update', 'on-demand-revalidation' ),
-				'desc'        => 'One path per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%categories%</code> <code>%tags%</code>',
-				'placeholder' => '/category/%categories%',
+				'desc'        => 'One path per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.',
+				'placeholder' => '/category/%category%',
 				'type'        => 'textarea',
 			],
 			[

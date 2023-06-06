@@ -19,24 +19,48 @@ class Helpers {
 
 		foreach ( $paths as $path ) {
 			$path = trim( $path );
-
-			if ( strpos( $path, '%slug%' ) !== false ) {
-				$final_paths[] = str_replace( '%slug%', $post->post_name, $path );
-			} elseif ( strpos( $path, '%author_nicename%' ) !== false ) {
-				$final_paths[] = str_replace( '%author_nicename%', get_the_author_meta( 'user_nicename', $post->post_author ), $path );
-			} elseif ( strpos( $path, '%categories%' ) !== false ) {
-				$categories = wp_get_post_categories( $post->ID, [ 'fields' => 'slugs' ] ) ?? [];
-				foreach ( $categories as $category ) {
-					$final_paths[] = str_replace( '%categories%', $category, $path );
+	
+			// Match all placeholders in the path
+			preg_match_all( '/%(.+?)%/', $path, $matches );
+			$placeholders = $matches[1];
+	
+			$current_paths = [ $path ];
+	
+			foreach ( $placeholders as $placeholder ) {
+				$new_paths = [];
+	
+				foreach ( $current_paths as $current_path ) {
+					if ( 'slug' === $placeholder ) {
+						$new_paths[] = str_replace( '%slug%', $post->post_name, $current_path );
+					} elseif ( 'author_nicename' === $placeholder ) {
+						$new_paths[] = str_replace( '%author_nicename%', get_the_author_meta( 'user_nicename', $post->post_author ), $current_path );
+					} elseif ( 'author_username' === $placeholder ) {
+						$new_paths[] = str_replace( '%author_username%', get_the_author_meta( 'user_login', $post->post_author ), $current_path );
+					} elseif ( 'categories' === $placeholder ) {
+						$terms = wp_get_post_terms( $post->ID, 'category', [ 'fields' => 'slugs' ] ) ?? [];
+						foreach ( $terms as $term ) {
+							$new_paths[] = str_replace( '%categories%', $term, $current_path );
+						}
+					} elseif ( 'tags' === $placeholder ) {
+						$terms = wp_get_post_terms( $post->ID, 'post_tag', [ 'fields' => 'slugs' ] ) ?? [];
+						foreach ( $terms as $term ) {
+							$new_paths[] = str_replace( '%tags%', $term, $current_path );
+						}
+					} elseif ( in_array( $placeholder, get_post_taxonomies( $post ), true ) ) {
+						$terms = wp_get_post_terms( $post->ID, $placeholder, [ 'fields' => 'slugs' ] ) ?? [];
+						foreach ( $terms as $term ) {
+							$new_paths[] = str_replace( '%' . $placeholder . '%', $term, $current_path );
+						}
+					} else {
+						$new_paths[] = $current_path;
+					}
 				}
-			} elseif ( strpos( $path, '%tags%' ) !== false ) {
-				$tags = wp_get_post_tags( $post->ID, [ 'fields' => 'slugs' ] ) ?? [];
-				foreach ( $tags as $tag ) {
-					$final_paths[] = str_replace( '%tags%', $tag, $path );
-				}
-			} else {
-				$final_paths[] = $path;
+				
+				$current_paths = $new_paths;
 			}
+	
+			// Add the paths to the final array
+			$final_paths = array_merge( $final_paths, $current_paths );
 		}
 
 		return $final_paths;
