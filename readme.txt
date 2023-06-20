@@ -3,7 +3,7 @@ Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 4.7
 Tested up to: 6.2.2
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 Requires PHP: 5.6
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -24,6 +24,9 @@ Feel free to create a PR to [plugin Github repo](https://github.com/gdidentity/o
 
 
 == Changelog ==
+= 1.1.2 =
+- fix: reduce unnecessary revalidations from @humet
+
 = 1.1.1 =
 - Allow custom taxonomies revalidation from @humet
 
