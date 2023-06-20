@@ -9,35 +9,35 @@ use WP_Error;
 class Revalidation {
 
 	public static function init() {
-		add_action('save_post', [self::class, 'handleSavePost'], 10, 2);
-		add_action('transition_post_status', [self::class, 'handleTransitionPostStatus'], 10, 3);
-		add_action('on_demand_revalidation_on_post_update', [self::class, 'revalidate'], 10, 1);
+		add_action( 'save_post', [ self::class, 'handleSavePost' ], 10, 2 );
+		add_action( 'transition_post_status', [ self::class, 'handleTransitionPostStatus' ], 10, 3 );
+		add_action( 'on_demand_revalidation_on_post_update', [ self::class, 'revalidate' ], 10, 1 );
 	}
 	
-	public static function handleSavePost($post_ID, $post) {
-		$excludedStatuses = ['auto-draft', 'inherit', 'draft', 'trash'];
+	public static function handleSavePost( $post_id, $post ) {
+		$excluded_statuses = [ 'auto-draft', 'inherit', 'draft', 'trash' ];
 		
-		if (isset($post->post_status) && in_array($post->post_status, $excludedStatuses)) {
+		if ( isset( $post->post_status ) && in_array( $post->post_status, $excluded_statuses, true ) ) {
 			return;
 		}
 		
-		if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || (defined('DOING_AJAX') && DOING_AJAX)) {
+		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 			return;
 		}
 	
-		if (false !== wp_is_post_revision($post_id)) {
+		if ( false !== wp_is_post_revision( $post_id ) ) {
 			return;
 		}
 		
-		self::revalidatePost($post);
+		self::revalidatePost( $post );
 	}
 	
-	public static function handleTransitionPostStatus($new_status, $old_status, $post) {
-		if ((($old_status !== 'draft' && $old_status !== 'trash') && $new_status === 'trash') ||
-			($old_status === 'publish' && $new_status === 'draft')) {
-			self::revalidatePost($post);
+	public static function handleTransitionPostStatus( $new_status, $old_status, $post ) {
+		if ( ( ( 'draft' !== $old_status && 'trash' !== $old_status ) && 'trash' === $new_status ) ||
+			( 'publish' === $old_status && 'draft' === $new_status ) ) {
+			self::revalidatePost( $post );
 		}
-	}	
+	}   
 
 	static function revalidatePost( $post ) {
 		if ( Settings::get( 'disable_cron', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
