@@ -98,6 +98,8 @@ class Revalidation {
 			}
 		}
 
+		$paths = array_unique( $paths );
+
 		$revalidate_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
 		$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
 		$revalidate_paths = Helpers::rewritePaths( $revalidate_paths, $post );
