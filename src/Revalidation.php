@@ -12,6 +12,22 @@ class Revalidation {
 		add_action( 'save_post', [ self::class, 'handleSavePost' ], 10, 2 );
 		add_action( 'transition_post_status', [ self::class, 'handleTransitionPostStatus' ], 10, 3 );
 		add_action( 'on_demand_revalidation_on_post_update', [ self::class, 'revalidate' ], 10, 1 );
+		add_action( 'post_updated', [ self::class, 'capture_old_permalink' ], 10, 3 );
+		add_action( 'wp_trash_post', [ self::class, 'capture_old_permalink_before_trash' ], 10, 1 );
+	}
+
+	public static function capture_old_permalink( $post_ID, $post_after, $post_before ) {
+		if ( 'trash' === $post_after->post_status || 'draft' === $post_after->post_status ) {
+			return;
+		}
+		
+		$old_permalink = get_permalink( $post_ID );
+		update_post_meta( $post_ID, '_old_permalink', $old_permalink );
+	}
+	
+	public static function capture_old_permalink_before_trash( $post_ID ) {
+		$old_permalink = get_permalink( $post_ID );
+		update_post_meta( $post_ID, '_old_permalink', $old_permalink );
 	}
 	
 	public static function handleSavePost( $post_id, $post ) {
@@ -35,19 +51,22 @@ class Revalidation {
 	public static function handleTransitionPostStatus( $new_status, $old_status, $post ) {
 		if ( ( ( 'draft' !== $old_status && 'trash' !== $old_status ) && 'trash' === $new_status ) ||
 			( 'publish' === $old_status && 'draft' === $new_status ) ) {
-			self::revalidatePost( $post );
+
+			$old_permalink = get_post_meta( $post->ID, '_old_permalink', true );
+
+			self::revalidatePost( $post, $old_permalink );
 		}
 	}   
 
-	static function revalidatePost( $post ) {
+	static function revalidatePost( $post, $old_permalink = '' ) {
 		if ( Settings::get( 'disable_cron', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
-			self::revalidate( $post );
+			self::revalidate( $post, $old_permalink );
 		} else {
-			wp_schedule_single_event( time(), 'on_demand_revalidation_on_post_update', [ $post ] );
+			wp_schedule_single_event( time(), 'on_demand_revalidation_on_post_update', [ $post, $old_permalink ] );
 		}
 	}
 
-	public static function revalidate( $post ) {
+	public static function revalidate( $post, $old_permalink = '' ) {
 		$frontend_url          = Settings::get( 'frontend_url' );
 		$revalidate_secret_key = Settings::get( 'revalidate_secret_key' );
 
@@ -65,11 +84,19 @@ class Revalidation {
 		$parse_permalink = parse_url( $post_permalink );
 		$page_path       = '/';
 
-		if ( isset( $parse_permalink['path'] ) ) {
-			$page_path = $parse_permalink['path'];
+		if ( isset( $parse_permalink['path'] ) && '/' !== $parse_permalink['path'] ) {
+			$page_path = substr( $parse_permalink['path'], -1 ) === '/' ? substr( $parse_permalink['path'], 0, -1 ) : $parse_permalink['path'];
+			$paths[]   = $page_path;
 		}
 
-		$paths[] = substr( $page_path, -1 ) === '/' ? substr( $page_path, 0, -1 ) : $page_path;
+		if ( ! empty( $old_permalink ) ) {
+			$parse_old_permalink = parse_url( $old_permalink );
+		
+			if ( isset( $parse_old_permalink['path'] ) && '/' !== $parse_old_permalink['path'] ) {
+				$old_page_path = substr( $parse_old_permalink['path'], -1 ) === '/' ? substr( $parse_old_permalink['path'], 0, -1 ) : $parse_old_permalink['path'];
+				$paths[]       = $old_page_path;
+			}
+		}
 
 		$revalidate_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
 		$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
