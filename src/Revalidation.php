@@ -12,12 +12,12 @@ class Revalidation {
 		add_action( 'save_post', [ self::class, 'handleSavePost' ], 10, 2 );
 		add_action( 'transition_post_status', [ self::class, 'handleTransitionPostStatus' ], 10, 3 );
 		add_action( 'on_demand_revalidation_on_post_update', [ self::class, 'revalidate' ], 10, 1 );
-		add_action( 'post_updated', [ self::class, 'capture_old_permalink' ], 10, 3 );
+		add_action( 'pre_post_update', [ self::class, 'capture_old_permalink' ], 10, 3 );
 		add_action( 'wp_trash_post', [ self::class, 'capture_old_permalink_before_trash' ], 10, 1 );
 	}
 
-	public static function capture_old_permalink( $post_ID, $post_after, $post_before ) {
-		if ( 'trash' === $post_after->post_status || 'draft' === $post_after->post_status ) {
+	public static function capture_old_permalink( $post_ID, $data ) {
+		if ( 'trash' === $data['post_status'] ) {
 			return;
 		}
 		
@@ -52,21 +52,19 @@ class Revalidation {
 		if ( ( ( 'draft' !== $old_status && 'trash' !== $old_status ) && 'trash' === $new_status ) ||
 			( 'publish' === $old_status && 'draft' === $new_status ) ) {
 
-			$old_permalink = get_post_meta( $post->ID, '_old_permalink', true );
-
-			self::revalidatePost( $post, $old_permalink );
+			self::revalidatePost( $post );
 		}
 	}   
 
-	static function revalidatePost( $post, $old_permalink = '' ) {
+	static function revalidatePost( $post ) {
 		if ( Settings::get( 'disable_cron', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
-			self::revalidate( $post, $old_permalink );
+			self::revalidate( $post );
 		} else {
-			wp_schedule_single_event( time(), 'on_demand_revalidation_on_post_update', [ $post, $old_permalink ] );
+			wp_schedule_single_event( time(), 'on_demand_revalidation_on_post_update', [ $post ] );
 		}
 	}
 
-	public static function revalidate( $post, $old_permalink = '' ) {
+	public static function revalidate( $post ) {
 		$frontend_url          = Settings::get( 'frontend_url' );
 		$revalidate_secret_key = Settings::get( 'revalidate_secret_key' );
 
@@ -88,6 +86,8 @@ class Revalidation {
 			$page_path = substr( $parse_permalink['path'], -1 ) === '/' ? substr( $parse_permalink['path'], 0, -1 ) : $parse_permalink['path'];
 			$paths[]   = $page_path;
 		}
+
+		$old_permalink = get_post_meta( $post->ID, '_old_permalink', true );
 
 		if ( ! empty( $old_permalink ) ) {
 			$parse_old_permalink = parse_url( $old_permalink );
