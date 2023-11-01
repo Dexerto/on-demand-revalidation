@@ -6,6 +6,7 @@ use OnDemandRevalidation\Admin\Settings;
 use OnDemandRevalidation\Helpers;
 use WP_Error;
 
+
 class Revalidation {
 
 	public static function init() {
@@ -68,6 +69,7 @@ class Revalidation {
 		$frontend_url          = Settings::get( 'frontend_url' );
 		$revalidate_secret_key = Settings::get( 'revalidate_secret_key' );
 
+
 		if ( ! ( $frontend_url || $revalidate_secret_key ) ) {
 			return new WP_Error( 'rest_forbidden', __( 'Fill Next.js URL and Revalidate Secret Key first.', 'on-demand-revalidation' ), [ 'status' => 401 ] );
 		}
@@ -98,11 +100,51 @@ class Revalidation {
 			}
 		}
 
+		$previous_tags = get_post_meta( $post->ID, '_previous_tags', true );
+		if ( ! $previous_tags ) {
+			$previous_tags = [];
+		}
+
+		// Get the current tags of the post.
+		$current_tags = wp_get_post_tags( $post->ID, [ 'fields' => 'ids' ] );
+	
+		// Determine which tags have been removed in the latest update.
+		$tags_removed = array_diff( $previous_tags, $current_tags );
+
+
+		foreach ( $tags_removed as $tag_id ) {
+			$tag_link        = get_tag_link( $tag_id );
+			$parsed_tag_link = parse_url( $tag_link );
+			
+			if ( isset( $parsed_tag_link['path'] ) && '/' !== $parsed_tag_link['path'] ) {
+					$tag_path = substr( $parsed_tag_link['path'], -1 ) === '/' ? substr( $parsed_tag_link['path'], 0, -1 ) : $parsed_tag_link['path'];
+					$paths[]  = $tag_path;
+			}
+		}
+
+		// Handling post categories.
+		$previous_categories = get_post_meta( $post->ID, '_previous_categories', true );
+		$previous_categories = $previous_categories ? $previous_categories : [];
+		$current_categories  = wp_get_post_categories( $post->ID, [ 'fields' => 'ids' ] );
+		$categories_removed  = array_diff( $previous_categories, $current_categories );
+
+		foreach ( $categories_removed as $cat_id ) {
+			$cat_link        = get_category_link( $cat_id );
+			$parsed_cat_link = parse_url( $cat_link );
+			if ( isset( $parsed_cat_link['path'] ) && '/' !== $parsed_cat_link['path'] ) {
+					$cat_path = rtrim( $parsed_cat_link['path'], '/' );
+					$paths[]  = $cat_path;
+			}
+		}
+
+
 		$paths = array_unique( $paths );
 
 		$revalidate_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
 		$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
 		$revalidate_paths = Helpers::rewritePaths( $revalidate_paths, $post );
+
+
 
 		if ( $revalidate_paths ) {
 			foreach ( $revalidate_paths as $path ) {
@@ -112,7 +154,11 @@ class Revalidation {
 			}
 		}
 
+
+
 		$paths = apply_filters( 'on_demand_revalidation_paths', $paths, $post );
+
+
 
 		$data = json_encode( [
 			'paths'  => $paths,
@@ -132,6 +178,9 @@ class Revalidation {
 
 		$response_data = ( ! is_wp_error( $response ) ) ? $body : $response;
 
+		// Update post meta for tags and categories.
+		update_post_meta( $post->ID, '_previous_tags', $current_tags );
+		update_post_meta( $post->ID, '_previous_categories', $current_categories );
 
 		if ( class_exists( 'CPurgeCache' ) ) {
 			\CPurgeCache\Purge::purge( $post );
@@ -174,7 +223,7 @@ class Revalidation {
 				'post_status' => 'publish',
 			])[0];
 			$response    = self::revalidate( $latest_post );
-
+			
 			wp_send_json( $response );
 			wp_die();
 		});
