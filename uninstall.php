@@ -1,4 +1,12 @@
 <?php
+/**
+ * Uninstall Script for On Demand Revalidation Plugin.
+ *
+ * This script is responsible for handling the uninstallation of the On Demand Revalidation plugin.
+ * When executed, it removes the plugin's options from the WordPress database.
+ *
+ * @package OnDemandRevalidation
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
