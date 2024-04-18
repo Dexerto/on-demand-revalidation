@@ -1,7 +1,11 @@
 <?php
+/**
+ * This settings class is based on the WordPress Settings API.
+ *
+ * @package OnDemandRevalidation
+ */
 
 namespace OnDemandRevalidation\Admin;
-
 
 /**
  * Class SettingsRegistry
@@ -21,14 +25,14 @@ class SettingsRegistry {
 	 *
 	 * @var array
 	 */
-	protected $settings_sections = [];
+	protected $settings_sections = array();
 
 	/**
 	 * Settings fields array
 	 *
 	 * @var array
 	 */
-	protected $settings_fields = [];
+	protected $settings_fields = array();
 
 	/**
 	 * SettingsRegistry constructor.
@@ -36,10 +40,12 @@ class SettingsRegistry {
 	 * @return void
 	 */
 	public function __construct() {
-		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 	}
 
 	/**
+	 * Get_settings_sections
+	 *
 	 * @return array
 	 */
 	public function get_settings_sections() {
@@ -47,6 +53,8 @@ class SettingsRegistry {
 	}
 
 	/**
+	 * Get_settings_fields
+	 *
 	 * @return array
 	 */
 	public function get_settings_fields() {
@@ -58,7 +66,7 @@ class SettingsRegistry {
 	 *
 	 * @return void
 	 */
-	function admin_enqueue_scripts() {
+	public function admin_enqueue_scripts() {
 		wp_enqueue_style( 'wp-color-picker' );
 
 		wp_enqueue_media();
@@ -69,12 +77,12 @@ class SettingsRegistry {
 	/**
 	 * Set settings sections
 	 *
-	 * @param string $slug    Setting Section Slug
-	 * @param array  $section setting section config
+	 * @param string $slug    Setting Section Slug.
+	 * @param array  $section setting section config.
 	 *
 	 * @return SettingsRegistry
 	 */
-	function register_section( string $slug, array $section ) {
+	public function register_section( string $slug, array $section ) {
 		$section['id']                    = $slug;
 		$this->settings_sections[ $slug ] = $section;
 
@@ -84,12 +92,12 @@ class SettingsRegistry {
 	/**
 	 * Register fields to a section
 	 *
-	 * @param string $section The slug of the section to register a field to
-	 * @param array  $fields  settings fields array
+	 * @param string $section The slug of the section to register a field to.
+	 * @param array  $fields  settings fields array.
 	 *
 	 * @return SettingsRegistry
 	 */
-	function register_fields( string $section, array $fields ) {
+	public function register_fields( string $section, array $fields ) {
 		foreach ( $fields as $field ) {
 			$this->register_field( $section, $field );
 		}
@@ -100,25 +108,25 @@ class SettingsRegistry {
 	/**
 	 * Register a field to a section
 	 *
-	 * @param string $section The slug of the section to register a field to
-	 * @param array  $field   The config for the field being registered
+	 * @param string $section The slug of the section to register a field to.
+	 * @param array  $field   The config for the field being registered.
 	 *
 	 * @return SettingsRegistry
 	 */
-	function register_field( string $section, array $field ) {
-		$defaults = [
+	public function register_field( string $section, array $field ) {
+		$defaults = array(
 			'name'  => '',
 			'label' => '',
 			'desc'  => '',
 			'type'  => 'text',
-		];
+		);
 
 		$field_config = wp_parse_args( $field, $defaults );
 
 		// Get the field name before the filter is passed.
 		$field_name = $field_config['name'];
 
-		// Unset it, as we don't want it to be filterable
+		// Unset it, as we don't want it to be filterable.
 		unset( $field_config['name'] );
 
 		/**
@@ -130,10 +138,10 @@ class SettingsRegistry {
 		 */
 		$field = apply_filters( 'on_demand_revalidation_setting_field_config', $field_config, $field_name, $section );
 
-		// Add the field name back after the filter has been applied
+		// Add the field name back after the filter has been applied.
 		$field['name'] = $field_name;
 
-		// Add the field to the section
+		// Add the field to the section.
 		$this->settings_fields[ $section ][] = $field;
 
 		return $this;
@@ -149,9 +157,9 @@ class SettingsRegistry {
 	 *
 	 * @return void
 	 */
-	function admin_init() {
+	public function admin_init() {
 
-		// Action that fires when settings are being initialized
+		// Action that fires when settings are being initialized.
 		do_action( 'on_demand_revalidation_init_settings', $this );
 
 		/**
@@ -180,19 +188,19 @@ class SettingsRegistry {
 			add_settings_section( $id, $section['title'], $callback, $id );
 		}
 
-		//register settings fields
+		// register settings fields.
 		foreach ( $this->settings_fields as $section => $field ) {
 			foreach ( $field as $option ) {
 
 				$name     = $option['name'];
 				$type     = isset( $option['type'] ) ? $option['type'] : 'text';
 				$label    = isset( $option['label'] ) ? $option['label'] : '';
-				$callback = isset( $option['callback'] ) ? $option['callback'] : [
+				$callback = isset( $option['callback'] ) ? $option['callback'] : array(
 					$this,
 					'callback_' . $type,
-				];
+				);
 
-				$args = [
+				$args = array(
 					'id'                => $name,
 					'class'             => isset( $option['class'] ) ? $option['class'] : $name,
 					'label_for'         => "{$section}[{$name}]",
@@ -210,22 +218,22 @@ class SettingsRegistry {
 					'step'              => isset( $option['step'] ) ? $option['step'] : '',
 					'disabled'          => isset( $option['disabled'] ) ? (bool) $option['disabled'] : false,
 					'value'             => isset( $option['value'] ) ? $option['value'] : null,
-				];
+				);
 
 				add_settings_field( "{$section}[{$name}]", $label, $callback, $section, $section, $args );
 			}
 		}
 
-		// creates our settings in the options table
+		// creates our settings in the options table.
 		foreach ( $this->settings_sections as $id => $section ) {
-			register_setting( $id, $id, [ $this, 'sanitize_options' ] );
+			register_setting( $id, $id, array( $this, 'sanitize_options' ) );
 		}
 	}
 
 	/**
 	 * Get field description for display
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return string
 	 */
@@ -242,11 +250,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a text field for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_text( array $args ) {
+	public function callback_text( array $args ) {
 		$value       = isset( $args['value'] ) && ! empty( $args['value'] ) ? esc_attr( $args['value'] ) : esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size        = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
 		$type        = isset( $args['type'] ) ? $args['type'] : 'text';
@@ -261,22 +269,22 @@ class SettingsRegistry {
 	/**
 	 * Displays a url field for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_url( array $args ) {
+	public function callback_url( array $args ) {
 		$this->callback_text( $args );
 	}
 
 	/**
 	 * Displays a number field for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_number( array $args ) {
+	public function callback_number( array $args ) {
 		$value       = esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size        = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
 		$type        = isset( $args['type'] ) ? $args['type'] : 'number';
@@ -294,11 +302,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a checkbox for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_checkbox( array $args ) {
+	public function callback_checkbox( array $args ) {
 
 		$value    = isset( $args['value'] ) && ! empty( $args['value'] ) ? esc_attr( $args['value'] ) : esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$disabled = isset( $args['disabled'] ) && true === $args['disabled'] ? 'disabled' : null;
@@ -316,11 +324,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a multicheckbox for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_multicheck( array $args ) {
+	public function callback_multicheck( array $args ) {
 
 		$value = $this->get_option( $args['id'], $args['section'], $args['std'] );
 		$html  = '<fieldset>';
@@ -341,11 +349,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a radio button for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_radio( array $args ) {
+	public function callback_radio( array $args ) {
 
 		$value = $this->get_option( $args['id'], $args['section'], $args['std'] );
 		$html  = '<fieldset>';
@@ -365,11 +373,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a selectbox for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_select( array $args ) {
+	public function callback_select( array $args ) {
 
 		$value = esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
@@ -388,11 +396,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a textarea for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_textarea( array $args ) {
+	public function callback_textarea( array $args ) {
 
 		$value       = esc_textarea( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size        = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
@@ -407,33 +415,33 @@ class SettingsRegistry {
 	/**
 	 * Displays the html for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_html( array $args ) {
+	public function callback_html( array $args ) {
 		echo wp_kses( $this->get_field_description( $args ), $this->get_allowed_wp_kses_html() );
 	}
 
 	/**
 	 * Displays a rich text textarea for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_wysiwyg( array $args ) {
+	public function callback_wysiwyg( array $args ) {
 
 		$value = $this->get_option( $args['id'], $args['section'], $args['std'] );
 		$size  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : '500px';
 
 		echo '<div style="max-width: ' . esc_attr( $size ) . ';">';
 
-		$editor_settings = [
+		$editor_settings = array(
 			'teeny'         => true,
 			'textarea_name' => $args['section'] . '[' . $args['id'] . ']',
 			'textarea_rows' => 10,
-		];
+		);
 
 		if ( isset( $args['options'] ) && is_array( $args['options'] ) ) {
 			$editor_settings = array_merge( $editor_settings, $args['options'] );
@@ -449,15 +457,16 @@ class SettingsRegistry {
 	/**
 	 * Displays a file upload field for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_file( array $args ) {
+	public function callback_file( array $args ) {
 
 		$value = esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
 		$id    = $args['section'] . '[' . $args['id'] . ']';
+		unset( $id );
 		$label = isset( $args['options']['button_label'] ) ? $args['options']['button_label'] : __( 'Choose File' );
 
 		$html  = sprintf( '<input type="text" class="%1$s-text wpsa-url" id="%2$s[%3$s]" name="%2$s[%3$s]" value="%4$s">', $size, $args['section'], $args['id'], $value );
@@ -470,11 +479,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a password field for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_password( array $args ) {
+	public function callback_password( array $args ) {
 
 		$value = esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
@@ -488,11 +497,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a color picker field for a settings field
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_color( $args ) {
+	public function callback_color( $args ) {
 
 		$value = esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
@@ -507,26 +516,29 @@ class SettingsRegistry {
 	/**
 	 * Displays a select box for creating the pages select box
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_pages( array $args ) {
+	public function callback_pages( array $args ) {
 
-		$dropdown_args = array_merge( [
-			'selected' => esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) ),
-			'name'     => $args['section'] . '[' . $args['id'] . ']',
-			'id'       => $args['section'] . '[' . $args['id'] . ']',
-			'echo'     => 0,
-		], $args );
+		$dropdown_args = array_merge(
+			array(
+				'selected' => esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) ),
+				'name'     => $args['section'] . '[' . $args['id'] . ']',
+				'id'       => $args['section'] . '[' . $args['id'] . ']',
+				'echo'     => 0,
+			),
+			$args 
+		);
 
-		$clean_args = [];
+		$clean_args = array();
 		foreach ( $dropdown_args as $key => $arg ) {
 			$clean_args[ $key ] = wp_kses( $arg, $this->get_allowed_wp_kses_html() );
 		}
 
 		// Ignore phpstan as this is providing an array as expected
-		// @phpstan-ignore-next-line
+		// @phpstan-ignore-next-line.
 		// phpcs:ignore
 		echo wp_dropdown_pages( $clean_args );
 	}
@@ -534,11 +546,11 @@ class SettingsRegistry {
 	/**
 	 * Displays a select box for user roles
 	 *
-	 * @param array $args settings field args
+	 * @param array $args settings field args.
 	 *
 	 * @return void
 	 */
-	function callback_user_role_select( array $args ) {
+	public function callback_user_role_select( array $args ) {
 		$selected = esc_attr( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 
 		if ( empty( $selected ) ) {
@@ -558,11 +570,11 @@ class SettingsRegistry {
 	/**
 	 * Sanitize callback for Settings API
 	 *
-	 * @param array $options
+	 * @param array $options array options.
 	 *
 	 * @return mixed
 	 */
-	function sanitize_options( array $options ) {
+	public function sanitize_options( array $options ) {
 
 		if ( ! $options ) {
 			return $options;
@@ -571,7 +583,7 @@ class SettingsRegistry {
 		foreach ( $options as $option_slug => $option_value ) {
 			$sanitize_callback = $this->get_sanitize_callback( $option_slug );
 
-			// If callback is set, call it
+			// If callback is set, call it.
 			if ( $sanitize_callback ) {
 				$options[ $option_slug ] = call_user_func( $sanitize_callback, $option_value );
 				continue;
@@ -584,23 +596,24 @@ class SettingsRegistry {
 	/**
 	 * Get sanitization callback for given option slug
 	 *
-	 * @param string $slug option slug
+	 * @param string $slug option slug.
 	 *
-	 * @return mixed string or bool false
+	 * @return mixed string or bool false.
 	 */
-	function get_sanitize_callback( $slug = '' ) {
+	public function get_sanitize_callback( $slug = '' ) {
 		if ( empty( $slug ) ) {
 			return false;
 		}
 
-		// Iterate over registered fields and see if we can find proper callback
+		// Iterate over registered fields and see if we can find proper callback.
 		foreach ( $this->settings_fields as $section => $options ) {
+			unset( $section );
 			foreach ( $options as $option ) {
 				if ( $slug !== $option['name'] ) {
 					continue;
 				}
 
-				// Return the callback name
+				// Return the callback name.
 				return isset( $option['sanitize_callback'] ) && is_callable( $option['sanitize_callback'] ) ? $option['sanitize_callback'] : false;
 			}
 		}
@@ -611,13 +624,13 @@ class SettingsRegistry {
 	/**
 	 * Get the value of a settings field
 	 *
-	 * @param string $option  settings field name
-	 * @param string $section the section name this field belongs to
-	 * @param string $default default text if it's not found
+	 * @param string $option  settings field name.
+	 * @param string $section the section name this field belongs to.
+	 * @param string $default_value default text if it's not found.
 	 *
 	 * @return string
 	 */
-	function get_option( $option, $section, $default = '' ) {
+	public function get_option( $option, $section, $default_value = '' ) {
 
 		$options = get_option( $section );
 
@@ -625,7 +638,7 @@ class SettingsRegistry {
 			return $options[ $option ];
 		}
 
-		return $default;
+		return $default_value;
 	}
 
 	/**
@@ -635,12 +648,12 @@ class SettingsRegistry {
 	 *
 	 * @return void
 	 */
-	function show_navigation() {
+	public function show_navigation() {
 		$html = '<h2 class="nav-tab-wrapper">';
 
 		$count = count( $this->settings_sections );
 
-		// don't show the navigation if only one section exists
+		// don't show the navigation if only one section exists.
 		if ( 1 === $count ) {
 			return;
 		}
@@ -661,31 +674,20 @@ class SettingsRegistry {
 	 *
 	 * @return void
 	 */
-	function show_forms() {
+	public function show_forms() {
 		?>
 		<div class="metabox-holder">
 			<?php foreach ( $this->settings_sections as $id => $form ) { ?>
 				<div id="<?php echo esc_attr( $id ); ?>" class="group" style="display: none;">
 					<form method="post" action="options.php">
 						<?php
-						// do_action( 'on_demand_revalidation_settings_form_top', $form );
 						settings_fields( $id );
 						do_settings_sections( $id );
-						// do_action( 'on_demand_revalidation_settings_form_bottom', $form );
 						if ( isset( $this->settings_fields[ $id ] ) ) :
 							?>
 							<div style="padding-left: 10px">
 								<?php
 								submit_button();
-								// submit_button(
-								// 	null,
-								// 	'primary',
-								// 	'submit',
-								// 	true,
-								// 	[
-								// 		'id' => "submit-$id",
-								// 	]
-								// );
 								?>
 							</div>
 						<?php endif; ?>
@@ -704,21 +706,21 @@ class SettingsRegistry {
 	 *
 	 * @return void
 	 */
-	function script() {
+	public function script() {
 		?>
 		<script>
 			jQuery(document).ready(function ($) {
-				//Initiate Color Picker
+				//Initiate Color Picker.
 				$('.wp-color-picker-field').wpColorPicker();
 
-				// Switches option sections
+				// Switches option sections.
 				$('.group').hide();
 				var activetab = '';
 				if (typeof (localStorage) != 'undefined') {
 					activetab = localStorage.getItem("activetab");
 				}
 
-				//if url has section id as hash then set it as active or override the current local storage value
+				//if url has section id as hash then set it as active or override the current local storage value.
 				if (window.location.hash) {
 					activetab = window.location.hash;
 					if (typeof (localStorage) != 'undefined') {
@@ -778,13 +780,13 @@ class SettingsRegistry {
 						self.prev('.wpsa-url').val(attachment.url).change();
 					});
 
-					// Finally, open the modal
+					// Finally, open the modal.
 					file_frame.open();
 				});
 			});
 		</script>
 		<?php
-		$this->_style_fix();
+		$this->style_fix();
 	}
 
 	/**
@@ -792,7 +794,7 @@ class SettingsRegistry {
 	 *
 	 * @return void
 	 */
-	function _style_fix() {
+	public function style_fix() {
 		global $wp_version;
 
 		if ( version_compare( $wp_version, '3.8', '<=' ) ) :
@@ -818,41 +820,41 @@ class SettingsRegistry {
 	 *
 	 * @return array
 	 */
-	function get_allowed_wp_kses_html() {
-		$allowed_atts = [
-			'align'       => [],
-			'class'       => [],
-			'type'        => [],
-			'id'          => [],
-			'dir'         => [],
-			'lang'        => [],
-			'style'       => [],
-			'xml:lang'    => [],
-			'src'         => [],
-			'alt'         => [],
-			'href'        => [],
-			'rel'         => [],
-			'rev'         => [],
-			'target'      => [],
-			'novalidate'  => [],
-			'value'       => [],
-			'name'        => [],
-			'tabindex'    => [],
-			'action'      => [],
-			'method'      => [],
-			'for'         => [],
-			'width'       => [],
-			'height'      => [],
-			'data'        => [],
-			'title'       => [],
-			'checked'     => [],
-			'disabled'    => [],
-			'selected'    => [],
-			'placeholder' => [],
-			'rows'        => [],
-		];
+	public function get_allowed_wp_kses_html() {
+		$allowed_atts = array(
+			'align'       => array(),
+			'class'       => array(),
+			'type'        => array(),
+			'id'          => array(),
+			'dir'         => array(),
+			'lang'        => array(),
+			'style'       => array(),
+			'xml:lang'    => array(),
+			'src'         => array(),
+			'alt'         => array(),
+			'href'        => array(),
+			'rel'         => array(),
+			'rev'         => array(),
+			'target'      => array(),
+			'novalidate'  => array(),
+			'value'       => array(),
+			'name'        => array(),
+			'tabindex'    => array(),
+			'action'      => array(),
+			'method'      => array(),
+			'for'         => array(),
+			'width'       => array(),
+			'height'      => array(),
+			'data'        => array(),
+			'title'       => array(),
+			'checked'     => array(),
+			'disabled'    => array(),
+			'selected'    => array(),
+			'placeholder' => array(),
+			'rows'        => array(),
+		);
 
-		return [
+		return array(
 			'form'     => $allowed_atts,
 			'label'    => $allowed_atts,
 			'input'    => $allowed_atts,
@@ -889,7 +891,6 @@ class SettingsRegistry {
 			'a'        => $allowed_atts,
 			'b'        => $allowed_atts,
 			'i'        => $allowed_atts,
-		];
+		);
 	}
-
 }

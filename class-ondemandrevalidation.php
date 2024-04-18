@@ -4,14 +4,16 @@
  *
  * Plugin Name:         On-Demand Revalidation
  * Plugin URI:          https://wordpress.org/plugins/on-demand-revalidation
- * GitHub Plugin URI:   https://github.com/gdidentity/on-demand-revalidation
- * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths on the post update.
- * Version:             1.1.3
- * Author:              GD IDENTITY
- * Author URI:          https://gdidentity.sk
+ * GitHub Plugin URI:   https://github.com/dexerto/on-demand-revalidation
+ * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths, tags on the post update.
+ * Version:             1.2.0
+ * Author:              Dexerto
+ * Author URI:          https://dexerto.com
  * Text Domain:         on-demand-revalidation
  * License:             GPL-3
  * License URI:         https://www.gnu.org/licenses/gpl-3.0.html
+ * 
+ * @package OnDemandRevalidation
  */
 
 use OnDemandRevalidation\Admin\Settings;
@@ -51,9 +53,9 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 				if ( self::$instance->includes() ) {
 					self::$instance->settings();
 					self::$instance->revalidation();
-					self::$instance->pluginLinks();
+					self::$instance->plugin_links();
 
-					\OnDemandRevalidation\Helpers::preventWrongApiUrl();
+					\OnDemandRevalidation\Helpers::prevent_wrong_api_url();
 				}
 			}
 
@@ -114,7 +116,7 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 		private function setup_constants(): void {
 
 			if ( ! function_exists( 'get_plugin_data' ) ) {
-				require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
 
 			// Plugin version.
@@ -160,7 +162,7 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 
 				// Bail if installed incorrectly.
 				if ( ! class_exists( '\OnDemandRevalidation\Admin\Settings' ) ) {
-					add_action( 'admin_notices', [ $this, 'missing_notice' ] );
+					add_action( 'admin_notices', array( $this, 'missing_notice' ) );
 					return false;
 				}
 			}
@@ -211,14 +213,17 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 		 *
 		 * @since 0.0.1
 		 */
-		private function pluginLinks(): void {
+		private function plugin_links(): void {
 
 			// Setup Settings link.
-			add_filter('plugin_action_links_' . plugin_basename( __FILE__ ), function ( $links ) {
-				$links[] = '<a href="/wp-admin/admin.php?page=on-demand-revalidation">Settings</a>';
+			add_filter(
+				'plugin_action_links_' . plugin_basename( __FILE__ ),
+				function ( $links ) {
+					$links[] = '<a href="/wp-admin/admin.php?page=on-demand-revalidation">Settings</a>';
 
-				return $links;
-			});
+					return $links;
+				}
+			);
 		}
 	}
 
