@@ -238,7 +238,7 @@ class Revalidation {
 					$response = new WP_Error( 'rest_forbidden', __( 'You cannot edit posts.', 'on-demand-revalidation' ), array( 'status' => 401 ) );
 				}
 
-				$latest_post = get_posts(
+				$latest_post = get_posts( //phpcs:ignore --suppress_filters already set to false
 					array(
 						'numberposts'      => 1,
 						'post_status'      => 'publish',
