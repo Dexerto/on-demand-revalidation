@@ -4,11 +4,11 @@
  *
  * Plugin Name:         On-Demand Revalidation
  * Plugin URI:          https://wordpress.org/plugins/on-demand-revalidation
- * GitHub Plugin URI:   https://github.com/gdidentity/on-demand-revalidation
- * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths on the post update.
- * Version:             1.1.3
- * Author:              GD IDENTITY
- * Author URI:          https://gdidentity.sk
+ * GitHub Plugin URI:   https://github.com/dexerto/on-demand-revalidation
+ * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths, tags on the post update.
+ * Version:             1.2.0
+ * Author:              Dexerto
+ * Author URI:          https://dexerto.com
  * Text Domain:         on-demand-revalidation
  * License:             GPL-3
  * License URI:         https://www.gnu.org/licenses/gpl-3.0.html
