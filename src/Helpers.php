@@ -100,8 +100,6 @@ class Helpers {
 								foreach ( $terms as $term ) {
 									$new_items[] = str_replace( '%' . $placeholder . '%', $term, $current_item );
 								}
-							} else {
-								$new_items[] = $current_item;
 							}
 							break;
 					}
