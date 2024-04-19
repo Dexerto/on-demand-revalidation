@@ -125,7 +125,7 @@ class Settings {
 				array(
 					'name'        => 'revalidate_tags',
 					'label'       => __( 'Tags to revalidate on Post update', 'on-demand-revalidation' ),
-					'desc'        => 'One tag per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code><code>%databaseid%</code> <code>%id%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.',
+					'desc'        => 'One tag per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code><code>%database_id%</code> <code>%id%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.',
 					'placeholder' => '%databaseid%',
 					'type'        => 'textarea',
 				),
