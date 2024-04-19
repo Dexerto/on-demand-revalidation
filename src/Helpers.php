@@ -33,142 +33,90 @@ class Helpers {
 		}
 	}
 
-		/**
-		 * Rewrites paths.
-		 *
-		 * This method rewrites paths based on post placeholders and returns the final paths array.
-		 *
-		 * @param array  $paths An array of paths to rewrite.
-		 * @param object $post The post object.
-		 * @return array The final array of rewritten paths.
-		 */
-	public static function rewrite_paths( $paths, $post ) {
-		$final_paths = array();
+	/**
+	 * Replaces placeholders in given items with actual values from a specified post and its taxonomies.
+	 * 
+	 * This function processes an array of strings, replacing placeholders like %slug%, %id%, %categories%, etc.,
+	 * with corresponding data from the post. It handles special placeholders for post IDs and taxonomy terms,
+	 * formatting the output as needed for different use cases.
+	 *
+	 * @param array    $items Array of strings containing placeholders to be replaced.
+	 * @param \WP_Post $post Post object used to extract data for replacing placeholders.
+	 * @return array Array of processed items with placeholders replaced by actual post data.
+	 */
+	public static function rewrite_placeholders( $items, $post ) {
+		$final_items = array();
 
-		foreach ( $paths as $path ) {
-			$path = trim( $path );
-	
-			// Match all placeholders in the path.
-			preg_match_all( '/%(.+?)%/', $path, $matches );
+		foreach ( $items as $item ) {
+			$item = trim( $item );
+
+			// Match all placeholders in the item.
+			preg_match_all( '/%(.+?)%/', $item, $matches );
 			$placeholders = $matches[1];
-	
-			$current_paths = array( $path );
-	
+
+			$current_items = array( $item );
+
 			foreach ( $placeholders as $placeholder ) {
-				$new_paths = array();
-	
-				foreach ( $current_paths as $current_path ) {
-					if ( 'slug' === $placeholder ) {
-						$new_paths[] = str_replace( '%slug%', $post->post_name, $current_path );
-					} elseif ( 'author_nicename' === $placeholder ) {
-						$new_paths[] = str_replace( '%author_nicename%', get_the_author_meta( 'user_nicename', $post->post_author ), $current_path );
-					} elseif ( 'author_username' === $placeholder ) {
-						$new_paths[] = str_replace( '%author_username%', get_the_author_meta( 'user_login', $post->post_author ), $current_path );
-					} elseif ( 'categories' === $placeholder ) {
-						$terms = wp_get_post_terms( $post->ID, 'category', array( 'fields' => 'slugs' ) ) ?? array();
-						foreach ( $terms as $term ) {
-							$new_paths[] = str_replace( '%categories%', $term, $current_path );
-						}
-					} elseif ( 'tags' === $placeholder ) {
-						$terms = wp_get_post_terms( $post->ID, 'post_tag', array( 'fields' => 'slugs' ) ) ?? array();
-						foreach ( $terms as $term ) {
-							$new_paths[] = str_replace( '%tags%', $term, $current_path );
-						}
-					} elseif ( in_array( $placeholder, get_post_taxonomies( $post ), true ) ) {
-						$terms = wp_get_post_terms( $post->ID, $placeholder, array( 'fields' => 'slugs' ) ) ?? array();
-						foreach ( $terms as $term ) {
-							$new_paths[] = str_replace( '%' . $placeholder . '%', $term, $current_path );
-						}
-					} else {
-						$new_paths[] = $current_path;
-					}
-				}
-				
-				$current_paths = $new_paths;
-			}
-	
-			// Add the paths to the final array.
-			$final_paths = array_merge( $final_paths, $current_paths );
-		}
+				$new_items = array();
 
-		return $final_paths;
-	}
-
-
-			/**
-			 * Rewrites tags.
-			 *
-			 * This method rewrites tags based on post placeholders and returns the final tags array.
-			 *
-			 * @param array  $tags An array of tags to rewrite.
-			 * @param object $post The post object.
-			 * @return array The final array of rewritten tags.
-			 */ 
-	public static function rewrite_tags( $tags, $post ) {
-		$final_tags = array();
-	
-		foreach ( $tags as $tag ) {
-				$tag = trim( $tag );
-	
-				// Match all placeholders within the tag template.
-				preg_match_all( '/{(.+?)}/', $tag, $matches );
-				$placeholders = $matches[1];
-	
-				$current_tags = array( $tag );
-	
-			foreach ( $placeholders as $placeholder ) {
-					$new_tags = array();
-	
-				foreach ( $current_tags as $current_tag ) {
+				foreach ( $current_items as $current_item ) {
 					switch ( $placeholder ) {
-						case 'databaseId':
-						case 'id':
-								$new_tags[] = str_replace( '{' . $placeholder . '}', $post->ID, $current_tag );
+						case 'slug':
+							$new_items[] = str_replace( '%slug%', $post->post_name, $current_item );
 							break;
-						case 'category':
-								$terms = wp_get_post_terms( $post->ID, 'category', array( 'fields' => 'slugs' ) );
+						case 'author_nicename':
+							$new_items[] = str_replace( '%author_nicename%', get_the_author_meta( 'user_nicename', $post->post_author ), $current_item );
+							break;
+						case 'author_username':
+							$new_items[] = str_replace( '%author_username%', get_the_author_meta( 'user_login', $post->post_author ), $current_item );
+							break;
+						case 'databaseId':
+							$new_items[] = str_replace( '%databaseId%', $post->ID, $current_item );
+							break;
+						case 'id':
+							// Encode the ID in a format that matches WPGRAPHQL.
+							$encoded_id  = base64_encode( 'post:' . $post->ID );
+							$new_items[] = str_replace( '%id%', $encoded_id, $current_item );
+							break;
+						case 'categories':
+							$terms = wp_get_post_terms( $post->ID, 'category', array( 'fields' => 'slugs' ) );
 							if ( ! empty( $terms ) ) {
 								foreach ( $terms as $term ) {
-									$new_tags[] = str_replace( '{category}', $term, $current_tag );
+									$new_items[] = str_replace( '%categories%', 'category:' . $term, $current_item );
 								}
 							} else {
-											// Ensure at least one tag remains even if there are no terms.
-											$new_tags[] = str_replace( '{category}', 'uncategorized', $current_tag );
+								$new_items[] = str_replace( '%categories%', 'category:uncategorized', $current_item );
 							}
 							break;
-						case 'tag':
-								$terms = wp_get_post_terms( $post->ID, 'post_tag', array( 'fields' => 'slugs' ) );
+						case 'tags':
+							$terms = wp_get_post_terms( $post->ID, 'post_tag', array( 'fields' => 'slugs' ) );
 							if ( ! empty( $terms ) ) {
 								foreach ( $terms as $term ) {
-									$new_tags[] = str_replace( '{tag}', $term, $current_tag );
+									$new_items[] = str_replace( '%tags%', $term, $current_item );
 								}
 							} else {
-											// Ensure at least one tag remains even if there are no terms.
-											$new_tags[] = str_replace( '{tag}', 'notag', $current_tag );
+								$new_items[] = str_replace( '%tags%', 'notag', $current_item );
 							}
 							break;
 						default:
-								$terms = wp_get_post_terms( $post->ID, $placeholder, array( 'fields' => 'slugs' ) );
+							$terms = wp_get_post_terms( $post->ID, $placeholder, array( 'fields' => 'slugs' ) );
 							if ( ! empty( $terms ) ) {
 								foreach ( $terms as $term ) {
-									$new_tags[] = str_replace( '{' . $placeholder . '}', $term, $current_tag );
+									$new_items[] = str_replace( '%' . $placeholder . '%', $term, $current_item );
 								}
 							} else {
-											// Preserve the tag without replacement if no terms found.
-											$new_tags[] = $current_tag;
+								$new_items[] = $current_item;
 							}
 							break;
 					}
 				}
-	
-					// Update the current tags for the next round of replacements.
-					$current_tags = $new_tags;
+				$current_items = $new_items;
 			}
-	
-				// Merge all fully processed tags into the final list.
-				$final_tags = array_merge( $final_tags, $current_tags );
+
+			// Add the fully processed items to the final array.
+			$final_items = array_merge( $final_items, $current_items );
 		}
-	
-		return $final_tags;
+
+		return $final_items;
 	}
 }
