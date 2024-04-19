@@ -117,16 +117,17 @@ class Settings {
 				array(
 					'name'        => 'revalidate_paths',
 					'label'       => __( 'Additional paths to revalidate on Post update', 'on-demand-revalidation' ),
-					'desc'        => 'One path per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.',
+					'desc'        => 'One path per row.',
 					'placeholder' => '/category/%category%',
 					'type'        => 'textarea',
 				),
 			
 				array(
-					'name'  => 'revalidate_tags',
-					'label' => __( 'Tags to revalidate on Post update', 'on-demand-revalidation' ),
-					'desc'  => 'Enter each tag on a new line, using placeholders like {databaseId}, {id}, {category}. Placeholders will be replaced with actual values from the post during revalidation.',
-					'type'  => 'textarea',
+					'name'        => 'revalidate_tags',
+					'label'       => __( 'Tags to revalidate on Post update', 'on-demand-revalidation' ),
+					'desc'        => 'One tag per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code><code>%databaseid%</code> <code>%id%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.',
+					'placeholder' => '%databaseid%',
+					'type'        => 'textarea',
 				),
 
 				array(
