@@ -123,10 +123,11 @@ class Settings {
 				),
 			
 				array(
-					'name'  => 'revalidate_tags',
-					'label' => __( 'Tags to revalidate on Post update', 'on-demand-revalidation' ),
-					'desc'  => 'Enter each tag on a new line, using placeholders like {databaseId}, {id}, {category}. Placeholders will be replaced with actual values from the post during revalidation.',
-					'type'  => 'textarea',
+					'name'        => 'revalidate_tags',
+					'label'       => __( 'Tags to revalidate on Post update', 'on-demand-revalidation' ),
+					'desc'        => 'One tag per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%databaseid%</code> <code>%id%</code>',
+					'placeholder' => '%databaseid%',
+					'type'        => 'textarea',
 				),
 
 				array(
