@@ -24,6 +24,8 @@ Feel free to create a PR to [plugin Github repo](https://github.com/gdidentity/o
 
 
 == Changelog ==
+= 1.2.2 =
+- feat: Added the rewrite_placeholders function to dynamically replace placeholders like `%slug%`, `%id%`, `%categories%`, and `%tags%` with actual post data from @MuhammedAO
 = 1.2.1 =
 - fix: renamed filenames to match PSR-4 compliance  from @MuhammedAO
 = 1.2.0 =
