@@ -153,12 +153,22 @@ class Revalidation {
 		$paths = array_unique( $paths );
 
 		$revalidate_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
-		$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
-		$revalidate_paths = Helpers::rewrite_placeholders( $revalidate_paths, $post );
+		
+		if ( ! empty( $revalidate_paths ) ) {
+			$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
+			$revalidate_paths = Helpers::rewrite_placeholders( $revalidate_paths, $post );
+		} else {
+			$paths = array();
+		}
 
 		$revalidate_tags = trim( Settings::get( 'revalidate_tags', '', 'on_demand_revalidation_post_update_settings' ) );
-		$revalidate_tags = preg_split( '/\r\n|\n|\r/', $revalidate_tags );
-		$tags            = Helpers::rewrite_placeholders( $revalidate_tags, $post );
+
+		if ( ! empty( $revalidate_tags ) ) {
+			$revalidate_tags = preg_split( '/\r\n|\n|\r/', $revalidate_tags );
+			$tags            = Helpers::rewrite_placeholders( $revalidate_tags, $post );
+		} else {
+			$tags = array();
+		}
 
 		if ( $revalidate_paths ) {
 			foreach ( $revalidate_paths as $path ) {
@@ -171,13 +181,19 @@ class Revalidation {
 		$paths = apply_filters( 'on_demand_revalidation_paths', $paths, $post );
 		$tags  = apply_filters( 'on_demand_revalidation_paths', $tags, $post );
 
-		$data = wp_json_encode(
-			array(
-				'paths'  => $paths,
-				'tags'   => $tags,
-				'postId' => $post->ID,
-			) 
+		$data = array(
+			'postId' => $post->ID,
 		);
+	
+		if ( ! empty( $paths ) ) {
+			$data['paths'] = $paths;
+		}
+	
+		if ( ! empty( $tags ) ) {
+			$data['tags'] = $tags;
+		}
+
+		$data = wp_json_encode( $data );
 
 		$response = wp_remote_request(
 			"$frontend_url/api/revalidate",
