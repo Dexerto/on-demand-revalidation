@@ -6,7 +6,7 @@
  * Plugin URI:          https://wordpress.org/plugins/on-demand-revalidation
  * GitHub Plugin URI:   https://github.com/dexerto/on-demand-revalidation
  * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths, tags on the post update.
- * Version:             1.2.2
+ * Version:             1.2.3
  * Author:              Dexerto
  * Author URI:          https://dexerto.com
  * Text Domain:         on-demand-revalidation

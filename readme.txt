@@ -3,7 +3,7 @@ Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 4.7
 Tested up to: 6.2.2
-Stable tag: 1.2.1
+Stable tag: 1.2.3
 Requires PHP: 8.0
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -24,6 +24,10 @@ Feel free to create a PR to [plugin Github repo](https://github.com/gdidentity/o
 
 
 == Changelog ==
+= 1.2.3 =
+- fix: Rename database id placeholder
+- fix: Remove unwanted default placeholders
+- fix: Do not send items if empty
 = 1.2.2 =
 - feat: Added the rewrite_placeholders function to dynamically replace placeholders like `%slug%`, `%id%`, `%categories%`, and `%tags%` with actual post data from @MuhammedAO
 = 1.2.1 =
