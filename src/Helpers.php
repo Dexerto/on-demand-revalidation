@@ -70,37 +70,33 @@ class Helpers {
 						case 'author_username':
 							$new_items[] = str_replace( '%author_username%', get_the_author_meta( 'user_login', $post->post_author ), $current_item );
 							break;
-						case 'databaseId':
-							$new_items[] = str_replace( '%databaseId%', $post->ID, $current_item );
+						case 'database_id':
+							$new_items[] = str_replace( '%database_id%', $post->ID, $current_item );
 							break;
 						case 'id':
 							// Encode the ID in a format that matches WPGRAPHQL.
-							$encoded_id  = base64_encode( 'post:' . $post->ID );
+							$encoded_id  = base64_encode( $post->ID );
 							$new_items[] = str_replace( '%id%', $encoded_id, $current_item );
 							break;
 						case 'categories':
 							$terms = wp_get_post_terms( $post->ID, 'category', array( 'fields' => 'slugs' ) );
 							if ( ! empty( $terms ) ) {
 								foreach ( $terms as $term ) {
-									$new_items[] = str_replace( '%categories%', 'category:' . $term, $current_item );
+									$new_items[] = str_replace( '%categories%', $term, $current_item );
 								}
-							} else {
-								$new_items[] = str_replace( '%categories%', 'category:uncategorized', $current_item );
 							}
 							break;
-						case 'tags':
+						case 'post_tag':
 							$terms = wp_get_post_terms( $post->ID, 'post_tag', array( 'fields' => 'slugs' ) );
 							if ( ! empty( $terms ) ) {
 								foreach ( $terms as $term ) {
-									$new_items[] = str_replace( '%tags%', $term, $current_item );
+									$new_items[] = str_replace( '%post_tag%', $term, $current_item );
 								}
-							} else {
-								$new_items[] = str_replace( '%tags%', 'notag', $current_item );
 							}
 							break;
 						default:
 							$terms = wp_get_post_terms( $post->ID, $placeholder, array( 'fields' => 'slugs' ) );
-							if ( ! empty( $terms ) ) {
+							if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 								foreach ( $terms as $term ) {
 									$new_items[] = str_replace( '%' . $placeholder . '%', $term, $current_item );
 								}
