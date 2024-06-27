@@ -77,6 +77,10 @@ class Revalidation {
 		if ( false !== wp_is_post_revision( $post_id ) ) {
 			return;
 		}
+
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) { 
+			return; 
+		}
 		
 		self::revalidate_post( $post );
 	}
