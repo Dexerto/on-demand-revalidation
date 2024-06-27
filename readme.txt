@@ -24,6 +24,8 @@ Feel free to create a PR to [plugin Github repo](https://github.com/Dexerto/on-d
 
 
 == Changelog ==
+= 1.2.5 =
+- feat: prevent revalidate functions from running more than once within a single save_post request from @MuhammedAO
 = 1.2.4 =
 - fix: do not send non-replaced string if term is not there
 = 1.2.3 =
