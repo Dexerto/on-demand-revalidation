@@ -53,6 +53,8 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 				if ( self::$instance->includes() ) {
 					self::$instance->settings();
 					self::$instance->revalidation();
+
+					\OnDemandRevalidation\CloudflareCachePurge::init();
 					self::$instance->plugin_links();
 
 					\OnDemandRevalidation\Helpers::prevent_wrong_api_url();
