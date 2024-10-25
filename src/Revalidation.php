@@ -161,8 +161,6 @@ class Revalidation {
 		if ( ! empty( $revalidate_paths ) ) {
 			$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
 			$revalidate_paths = Helpers::rewrite_placeholders( $revalidate_paths, $post );
-		} else {
-			$paths = array();
 		}
 
 		$revalidate_tags = trim( Settings::get( 'revalidate_tags', '', 'on_demand_revalidation_post_update_settings' ) );
