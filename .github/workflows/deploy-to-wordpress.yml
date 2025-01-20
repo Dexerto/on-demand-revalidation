@@ -31,7 +31,7 @@ jobs:
           mkdir plugin-build
           composer archive -vvv --format=zip --file="plugin-build/on-demand-revalidation"
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: on-demand-revalidation
           path: plugin-build/on-demand-revalidation.zip
