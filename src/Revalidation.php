@@ -183,7 +183,7 @@ class Revalidation {
 		}
 
 		$paths = apply_filters( 'on_demand_revalidation_paths', $paths, $post );
-		$tags  = apply_filters( 'on_demand_revalidation_paths', $tags, $post );
+		$tags  = apply_filters( 'on_demand_revalidation_tags', $tags, $post );
 
 		$data = array(
 			'postId' => $post->ID,
