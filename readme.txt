@@ -2,8 +2,8 @@
 Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 4.7
-Tested up to: 6.5.2
-Stable tag: 1.2.4
+Tested up to: 6.7.1
+Stable tag: 1.2.5
 Requires PHP: 8.0
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -24,6 +24,10 @@ Feel free to create a PR to [plugin Github repo](https://github.com/Dexerto/on-d
 
 
 == Changelog ==
+= 1.2.6 =
+- fix: tags array populated by paths filter from @cavemon
+- fix: paths array empty if `revalidate_paths` is not defined from @cavemon
+- fix: better error handling from @humet
 = 1.2.5 =
 - feat: prevent revalidate functions from running more than once within a single save_post request from @MuhammedAO
 = 1.2.4 =
