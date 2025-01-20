@@ -215,14 +215,25 @@ class Revalidation {
 
 		$response_data = ( ! is_wp_error( $response ) ) ? $body : $response;
 
+		if ( is_wp_error( $response ) ) {
+			return new WP_Error( 'revalidate_error', $response->get_error_message(), array( 'status' => 403 ) );
+		}
+
+		if ( ! is_array( $response_data ) || ! isset( $response_data['revalidated'] ) ) {
+			return new WP_Error( 
+				'revalidate_error', 
+				'Invalid response from revalidation endpoint', 
+				array( 'status' => 403 ) 
+			);
+		}
+
+		if ( ! $response_data['revalidated'] ) {
+			$error_message = isset( $response_data['message'] ) ? $response_data['message'] : 'Revalidation failed';
+			return new WP_Error( 'revalidate_error', $error_message, array( 'status' => 403 ) );
+		}
 
 		if ( class_exists( 'CPurgeCache' ) ) {
 			\CPurgeCache\Purge::purge( $post );
-		}
-
-
-		if ( ! $response_data['revalidated'] ) {
-			return new WP_Error( 'revalidate_error', $response['message'], array( 'status' => 403 ) );
 		}
 
 		$revalidated = implode( ', ', $paths );
