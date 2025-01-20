@@ -24,12 +24,11 @@ Feel free to create a PR to [plugin Github repo](https://github.com/Dexerto/on-d
 
 
 == Changelog ==
-= 1.2.6 =
+= 1.2.5 =
+- feat: prevent revalidate functions from running more than once within a single save_post request from @MuhammedAO
 - fix: tags array populated by paths filter from @cavemon
 - fix: paths array empty if `revalidate_paths` is not defined from @cavemon
 - fix: better error handling from @humet
-= 1.2.5 =
-- feat: prevent revalidate functions from running more than once within a single save_post request from @MuhammedAO
 = 1.2.4 =
 - fix: do not send non-replaced string if term is not there
 = 1.2.3 =
