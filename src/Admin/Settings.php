@@ -11,6 +11,7 @@ namespace OnDemandRevalidation\Admin;
 
 use OnDemandRevalidation\Admin\SettingsRegistry;
 use OnDemandRevalidation\Revalidation;
+use OnDemandRevalidation\CloudflareCachePurge;
 
 /**
  * Class Settings
@@ -40,6 +41,11 @@ class Settings {
 		add_action( 'init', array( $this, 'register_settings' ) );
 		add_action( 'admin_init', array( $this, 'initialize_settings_page' ) );
 
+
+		if ( is_admin() ) {
+			CloudflareCachePurge::add_purge_cache_button_script();
+		}
+
 		if ( is_admin() ) {
 			Revalidation::test_revalidation_button();
 		}
@@ -54,8 +60,8 @@ class Settings {
 	public function add_options_page() {
 
 		add_options_page(
-			__( 'Next.js On-Demand Revalidation', 'on-demand-revalidation' ),
-			__( 'Next.js On-Demand Revalidation', 'on-demand-revalidation' ),
+			__( 'On-Demand Revalidation', 'on-demand-revalidation' ),
+			__( 'On-Demand Revalidation', 'on-demand-revalidation' ),
 			'manage_options',
 			'on-demand-revalidation',
 			array( $this, 'render_settings_page' )
@@ -138,6 +144,67 @@ class Settings {
 				),
 			) 
 		);
+
+		$this->settings_api->register_section(
+			'on_demand_revalidation_cloudflare_settings',
+			array(
+				'title' => __( 'Cloudflare Cache Purge', 'on-demand-revalidation' ),
+				'desc'  => __( 'Configure settings for Cloudflare cache purging via path or tag. These settings are optional and will only take effect if Cloudflare authentication is successfully verified.', 'on-demand-revalidation' ),
+			)
+		);
+
+		$this->settings_api->register_fields(
+			'on_demand_revalidation_cloudflare_settings',
+			array(
+					
+				array(
+					'name' => 'cloudflare_cache_purge_enabled',
+					'desc' => __( 'Enable cache purge on post update', 'on-demand-revalidation' ),
+					'type' => 'checkbox',
+				),
+
+				array(
+					'name' => 'cloudflare_schedule_on_post_update',
+					'desc' => __( 'Schedule purge on post update. (If unchecked, the purge will run immediately during the update, which might slow down the process.)', 'on-demand-revalidation' ),
+					'type' => 'checkbox',
+				),
+					
+				array(
+					'name'  => 'cloudflare_zone_id',
+					'label' => __( 'Zone ID', 'on-demand-revalidation' ),
+					'type'  => 'text',
+					'desc'  => '<a href="https://developers.cloudflare.com/api/tokens/create/" target="_blank">' . __( 'Click here for information on how to find your Zone ID and API token.', 'on-demand-revalidation' ) . '</a>',
+				),
+				array(
+					'name'  => 'cloudflare_api_token',
+					'label' => __( 'API Token', 'on-demand-revalidation' ),
+					'type'  => 'password',
+				),
+
+				array(
+					'name'        => 'cloudflare_cache_purge_paths',
+					'label'       => __( 'Paths to Purge', 'on-demand-revalidation' ),
+					'desc'        => __( 'Enter one path per line that you want to purge from Cloudflare cache.', 'on-demand-revalidation' ),
+					'type'        => 'textarea',
+					'placeholder' => 'https://example.com/category/post',
+				),
+
+				array(
+					'name'        => 'cloudflare_cache_purge_tags',
+					'label'       => __( 'Tags to Purge', 'on-demand-revalidation' ),
+					'desc'        => __( 'Enter one tag per line to purge related content from Cloudflare cache.', 'on-demand-revalidation' ),
+					'type'        => 'textarea',
+					'placeholder' => 'category-page',
+				),
+				array(
+					'name'  => 'test-config',
+					'label' => __( 'Test Config', 'on-demand-revalidation' ),
+					'desc'  => '<a id="test-cloudflare-config" class="button button-primary" style="margin-bottom: 15px;">Test Config</a>',
+					'type'  => 'html',
+				),
+
+			)
+		);
 	}
 
 	/**
@@ -162,7 +229,7 @@ class Settings {
 		?>
 		<div class="wrap">
 			<?php
-			echo '<h1>Next.js On-Demand Revalidation</h1>';
+			echo '<h1>On-Demand Revalidation</h1>';
 			$this->settings_api->show_navigation();
 			$this->settings_api->show_forms();
 			?>
