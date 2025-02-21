@@ -341,7 +341,7 @@ class CloudflareCachePurge {
 					wp_send_json_error( array( 'message' => __( 'You do not have permission to manage options.', 'on-demand-revalidation' ) ) );
 					wp_die();
 				}
-				$posts = get_posts(
+				$posts = get_posts( //phpcs:ignore --suppress_filters already set to false
 					array(
 						'numberposts'      => 1,
 						'post_status'      => 'publish',
