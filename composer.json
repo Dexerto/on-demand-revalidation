@@ -3,6 +3,7 @@
     "type": "wordpress-plugin",
     "license": "GPL-3.0-or-later",
     "version": "1.2.5",
+		"description": "A WordPress plugin that allows for on-demand revalidation in a Next.js app.",
     "require": {
         "php": ">=8.2"
     },
