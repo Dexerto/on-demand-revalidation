@@ -1,0 +1,13 @@
+# Dependencies
+/node_modules/
+/vendor/
+
+# Build files
+/build/
+/dist/
+/assets/
+
+# Other
+/.git/
+/.github/
+/.vscode/

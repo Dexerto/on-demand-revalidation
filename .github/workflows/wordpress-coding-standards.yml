@@ -8,37 +8,32 @@ on:
     branches:
       - main
 jobs:
-  run:
+  php-tests:
     runs-on: ubuntu-latest
-    name: Check code
     strategy:
       matrix:
-        php: [ 8.0.15 ]
-
+        php: [8.2]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
+      - uses: actions/checkout@v3
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, intl
-          tools: composer
-
-      - name: Get Composer Cache Directory
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          coverage: none
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+      - name: Cache Composer packages
         id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: php-${{ matrix.php }}-${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: php-${{ matrix.php }}-${{ runner.os }}-composer
-
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
       - name: Install dependencies
-        run: |
-          composer update
+        run: composer install --prefer-dist --no-progress
       - name: Run PHP_CodeSniffer
-        run: composer run-script phpcs
+        run: composer run phpcs
+      - name: Run PHPUnit
+        run: composer run test

@@ -1,0 +1,45 @@
+services:
+  wordpress:
+    build: ./
+    ports:
+      - 8080:80
+      - 9003:9003
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_pass
+      WORDPRESS_DB_NAME: wordpress
+    restart: unless-stopped
+    volumes:
+      - wordpress:/var/www/html
+      - ../:/var/www/html/wp-content/plugins/plugin-dev
+      - ../logs:/var/www/html/wp-content/logs
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_pass
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    ports:
+      - 3306:3306
+    volumes:
+      - data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'wp_user', '-pwp_pass']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  wordpress:
+  data:
