@@ -1,0 +1,105 @@
+{
+  "name": "WordPress",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "wordpress",
+  "workspaceFolder": "/var/www/html/wp-content/plugins/plugin-dev",
+  "customizations": {
+    "vscode": {
+      "settings": {
+				"css.validate": false,
+				"less.validate": false,
+				"scss.validate": false,
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "php.suggest.basic": false,
+        "php.version": "8.2",
+        "php.validate.enable": true,
+        "php.validate.run": "onType",
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "php.debug.ideKey": "VSCODE",
+        "php-debug.xdebugMode": "debug",
+        "php-debug.connectTimeout": 10,
+        "php-debug.log": true,
+        "php-debug.pathMapping": {
+          "/var/www/html/wp-content/plugins/plugin-dev": "${workspaceFolder}"
+        },
+        "intelephense.environment.phpVersion": "8.2",
+        "intelephense.diagnostics.undefinedTypes": false,
+        "intelephense.stubs": [
+          "apache",
+          "bcmath",
+          "calendar",
+          "wordpress",
+          "Core",
+          "standard",
+          "zlib",
+          "Zend OPcache"
+        ],
+        "intelephense.environment.includePaths": [
+          "/var/www/html",
+          "/var/www/html/wp-includes",
+          "/var/www/html/wp-admin",
+          "${workspaceFolder}/vendor/php-stubs/wordpress-stubs"
+        ],
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": false,
+        "editor.detectIndentation": true,
+        "editor.rulers": [100],
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.exclude": {
+          "**/.git": true,
+          "**/.DS_Store": true,
+          "**/node_modules": true,
+          "**/vendor": true
+        },
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/vendor": true
+        },
+        "editor.codeActionsOnSave": {
+          "source.fixAll": "explicit"
+        },
+        "[php]": {
+          "editor.defaultFormatter": "valeryanm.vscode-phpsab"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+				"[typescript]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+        "[css]": {
+          "editor.defaultFormatter": "stylelint.vscode-stylelint"
+        },
+				"[scss]": {
+					"editor.defaultFormatter": "stylelint.vscode-stylelint"
+				},
+				"stylelint.validate": ["css", "scss"]
+      },
+      "extensions": [
+        "wordpresstoolbox.wordpress-toolbox",
+        "johnbillion.vscode-wordpress-hooks",
+        "bmewburn.vscode-intelephense-client",
+        "valeryanm.vscode-phpsab",
+        "xdebug.php-debug",
+        "mehedidracula.php-namespace-resolver",
+        "eamodio.gitlens",
+        "editorconfig.editorconfig",
+        "dbaeumer.vscode-eslint",
+        "stylelint.vscode-stylelint",
+        "esbenp.prettier-vscode",
+        "mikestead.dotenv",
+        "christian-kohler.path-intellisense",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached,readonly"
+  ],
+  "postCreateCommand": ".devcontainer/wp-setup.sh && chmod 700 /home/vscode/.ssh && find /home/vscode/.ssh -type f -exec chmod 600 {} \\; && chown -R vscode:vscode /home/vscode/.ssh && .devcontainer/git-setup.sh && composer install",
+  "remoteUser": "vscode",
+  "forwardPorts": [8080, 3306, 9003]
+}

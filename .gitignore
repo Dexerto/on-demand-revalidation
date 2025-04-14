@@ -1,1 +1,41 @@
-/vendor
+# Composer
+composer.phar
+/vendor/
+composer.lock
+
+# Node.js
+/node_modules/
+npm-debug.log
+yarn-error.log
+
+# PHPUnit
+.phpunit.result.cache
+
+# WordPress
+wp-config.php
+/wp-content/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE and Editor folders
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+*.sublime-workspace
+*.sublime-project
+.DS_Store
+Thumbs.db
+
+# Build files
+/build/
+/dist/
+
+# Debug logs
+/logs/
