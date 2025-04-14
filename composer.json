@@ -1,8 +1,11 @@
 {
-    "name": "gdidentity/on-demand-revalidation",
+    "name": "dexerto/on-demand-revalidation",
     "type": "wordpress-plugin",
     "license": "GPL-3.0-or-later",
     "version": "1.2.5",
+    "require": {
+        "php": ">=8.2"
+    },
     "autoload": {
         "psr-4": {
             "OnDemandRevalidation\\": "src/"
@@ -10,8 +13,8 @@
     },
     "authors": [
         {
-            "name": "GD IDENTITY",
-            "email": "jakub.bebjak@gdidentity.sk"
+            "name": "Dexerto",
+            "email": "website@dexerto.com"
         }
     ],
     "config": {
@@ -20,21 +23,21 @@
         }
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.9",
+        "squizlabs/php_codesniffer": "^3.12",
         "automattic/vipwpcs": "^3.0",
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpunit/phpunit": "^11.5",
+        "yoast/phpunit-polyfills": "^4.0",
+        "brain/monkey": "^2.6",
+        "10up/wp_mock": "^0.4.2"
     },
     "scripts": {
-        "phpcs": [
-			"php ./vendor/bin/phpcs"
-		],
-        "phpcsi": [
-			"php ./vendor/bin/phpcs -i"
-		],
-		"phpcbf": [
-			"php ./vendor/bin/phpcbf"
-		]
-    },
+			"phpcs": "phpcs",
+			"phpcbf": "phpcbf",
+			"test": "phpunit"
+  	},
     "archive": {
 		"exclude": [
 			"*.yml",
