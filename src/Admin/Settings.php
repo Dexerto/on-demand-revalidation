@@ -89,14 +89,27 @@ class Settings {
 					'label' => __( 'Revalidate Secret Key', 'on-demand-revalidation' ),
 					'type'  => 'password',
 				),
+
+				array(
+					'name' => 'disable_cron',
+					'desc' => __( "<b>Disable scheduled revalidation.</b> Revalidation triggered immediately without using WP-Cron. It'll slow down post update.", 'on-demand-revalidation' ),
+					'type' => 'checkbox',
+				),
+
+				array(
+					'name'  => 'test-config',
+					'label' => __( 'Test your config:', 'on-demand-revalidation' ),
+					'desc'  => '<a id="on-demand-revalidation-post-update-test" class="button button-primary" style="margin-bottom: 15px;">Revalidate Latest Post</a>',
+					'type'  => 'html',
+				),
 			)
 		);
 
 		$this->settings_api->register_section(
 			'on_demand_revalidation_post_update_settings',
 			array(
-				'title' => __( 'On post update', 'on-demand-revalidation' ),
-				'desc'  => __( 'On post update is current page revalidated automatically.', 'on-demand-revalidation' ),
+				'title' => __( 'All Settings', 'on-demand-revalidation' ),
+				'desc'  => __( 'Settings that run on every update for any post type.', 'on-demand-revalidation' ),
 			)
 		);
 
@@ -109,14 +122,10 @@ class Settings {
 					'type'    => 'checkbox',
 					'default' => 'on',
 				),
-				array(
-					'name' => 'disable_cron',
-					'desc' => __( "<b>Disable scheduled revalidation.</b> Revalidation triggered immediately without using WP-Cron. It'll slow down post update.", 'on-demand-revalidation' ),
-					'type' => 'checkbox',
-				),
+
 				array(
 					'name'        => 'revalidate_paths',
-					'label'       => __( 'Additional paths to revalidate on Post update', 'on-demand-revalidation' ),
+					'label'       => __( 'Additional paths to revalidate on all updates', 'on-demand-revalidation' ),
 					'desc'        => 'One path per row.',
 					'placeholder' => '/category/%category%',
 					'type'        => 'textarea',
@@ -124,18 +133,13 @@ class Settings {
 
 				array(
 					'name'        => 'revalidate_tags',
-					'label'       => __( 'Tags to revalidate on Post update', 'on-demand-revalidation' ),
+					'label'       => __( 'Tags to revalidate on all updates', 'on-demand-revalidation' ),
 					'desc'        => 'One tag per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code><code>%database_id%</code> <code>%id%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.',
 					'placeholder' => '%databaseid%',
 					'type'        => 'textarea',
 				),
 
-				array(
-					'name'  => 'test-config',
-					'label' => __( 'Test your config:', 'on-demand-revalidation' ),
-					'desc'  => '<a id="on-demand-revalidation-post-update-test" class="button button-primary" style="margin-bottom: 15px;">Revalidate Latest Post</a>',
-					'type'  => 'html',
-				),
+
 			)
 		);
 
@@ -180,6 +184,13 @@ class Settings {
 						'desc'        => __( 'One tag per row. Supports placeholders.', 'on-demand-revalidation' ),
 						'placeholder' => '%id%',
 						'type'        => 'textarea',
+					),
+					array(
+						'name'    => 'revalidate_homepage_' . $post_type_obj->name,
+						// translators: %s: singular post type name, used in the textarea label.
+						'desc'    => sprintf( __( 'Revalidate Homepage on all updates for %s', 'on-demand-revalidation' ), $post_type_obj->labels->singular_name ),
+						'type'    => 'checkbox',
+						'default' => 'on',
 					),
 				)
 			);
