@@ -24,6 +24,8 @@ Feel free to create a PR to [plugin Github repo](https://github.com/Dexerto/on-d
 
 
 == Changelog ==
+= 1.2.6 =
+- feat: Add ability to provide custom paths and tags per post type from @MuhammedAO
 = 1.2.5 =
 - feat: prevent revalidate functions from running more than once within a single save_post request from @MuhammedAO
 - fix: tags array populated by paths filter from @cavemon
