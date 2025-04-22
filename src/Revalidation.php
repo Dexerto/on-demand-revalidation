@@ -142,9 +142,26 @@ class Revalidation {
 
 		$paths = array();
 
-		if ( Settings::get( 'revalidate_homepage', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
+		$individual_homepage = Settings::get( 'revalidate_homepage_' . $post_type, null, 'on_demand_revalidation_' . $post_type . '_settings');
+
+		if ( null === $individual_homepage ) {
+			// no per‑type override, use global.
+			$home_enabled = (
+				Settings::get(
+					'revalidate_homepage',
+					'on',
+					'on_demand_revalidation_post_update_settings'
+				) === 'on'
+			);
+		} else {
+			// use per‑type setting.
+			$home_enabled = ( 'on' === $individual_homepage );
+		}
+
+		if ( $home_enabled ) {
 			$paths[] = '/';
 		}
+
 
 		$post_permalink  = get_permalink( $post );
 		$parse_permalink = wp_parse_url( $post_permalink );
@@ -205,7 +222,7 @@ class Revalidation {
 		}
 
 		$paths = apply_filters( 'on_demand_revalidation_paths', $paths, $post );
-		$tags  = apply_filters( 'on_demand_revalidation_tags', $tags, $post );
+
 
 
 			// per‑post‑type additional tags.
@@ -215,6 +232,8 @@ class Revalidation {
 			$post_type_defined_tags = Helpers::rewrite_placeholders( $post_type_defined_tags, $post );
 			$tags                   = array_merge( $tags, $post_type_defined_tags );
 		}
+
+		$tags  = apply_filters( 'on_demand_revalidation_tags', $tags, $post );
 
 		$data = array(
 			'postId' => $post->ID,
