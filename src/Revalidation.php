@@ -142,7 +142,7 @@ class Revalidation {
 
 		$paths = array();
 
-		$individual_homepage = Settings::get( 'revalidate_homepage_' . $post_type, null, 'on_demand_revalidation_' . $post_type . '_settings');
+		$individual_homepage = Settings::get( 'revalidate_homepage_' . $post_type, null, 'on_demand_revalidation_' . $post_type . '_settings' );
 
 		if ( null === $individual_homepage ) {
 			// no per‑type override, use global.
@@ -233,7 +233,7 @@ class Revalidation {
 			$tags                   = array_merge( $tags, $post_type_defined_tags );
 		}
 
-		$tags  = apply_filters( 'on_demand_revalidation_tags', $tags, $post );
+		$tags = apply_filters( 'on_demand_revalidation_tags', $tags, $post );
 
 		$data = array(
 			'postId' => $post->ID,
