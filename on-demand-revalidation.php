@@ -6,13 +6,13 @@
  * Plugin URI:          https://wordpress.org/plugins/on-demand-revalidation
  * GitHub Plugin URI:   https://github.com/dexerto/on-demand-revalidation
  * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths, tags on the post update.
- * Version:             1.2.5
+ * Version:             1.3.0
  * Author:              Dexerto
  * Author URI:          https://dexerto.com
  * Text Domain:         on-demand-revalidation
  * License:             GPL-3
  * License URI:         https://www.gnu.org/licenses/gpl-3.0.html
- * 
+ *
  * @package OnDemandRevalidation
  */
 
@@ -54,6 +54,7 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 					self::$instance->settings();
 					self::$instance->revalidation();
 					self::$instance->plugin_links();
+					self::$instance->load_textdomain();
 
 					\OnDemandRevalidation\Helpers::prevent_wrong_api_url();
 				}
@@ -121,7 +122,8 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 
 			// Plugin version.
 			if ( ! defined( 'ON_DEMAND_REVALIDATION_VERSION' ) ) {
-				define( 'ON_DEMAND_REVALIDATION_VERSION', get_plugin_data( __FILE__ )['Version'] );
+				$plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
+				define( 'ON_DEMAND_REVALIDATION_VERSION', $plugin_data['Version'] );
 			}
 
 			// Plugin Folder Path.
@@ -222,6 +224,20 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 					$links[] = '<a href="/wp-admin/admin.php?page=on-demand-revalidation">Settings</a>';
 
 					return $links;
+				}
+			);
+		}
+
+		/**
+		 * Load plugin text domain.
+		 *
+		 * @since 1.3.0
+		 */
+		private function load_textdomain(): void {
+			add_action(
+				'init',
+				function () {
+					load_plugin_textdomain( 'on-demand-revalidation', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 				}
 			);
 		}
