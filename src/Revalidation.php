@@ -78,10 +78,6 @@ class Revalidation {
 			return;
 		}
 
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-			return;
-		}
-
 		self::revalidate_post( $post );
 	}
 
