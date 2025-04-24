@@ -1,16 +1,16 @@
 === On-Demand Revalidation ===
 Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
-Requires at least: 4.7
-Tested up to: 6.7.1
-Stable tag: 1.2.5
+Requires at least: 6.0.0
+Tested up to: 6.7.2
+Stable tag: 1.3.0
 Requires PHP: 8.0
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 === Description ===
 
-Next.js On-Demand Revalidation for Wordpress on the post update, revalidate specific paths and tags on the post update.
+Next.js On-Demand Revalidation for Wordpress on post updates, revalidate specific paths and tags on post updates.
 
 Feel free to create a PR to [plugin Github repo](https://github.com/Dexerto/on-demand-revalidation).
 
@@ -24,6 +24,9 @@ Feel free to create a PR to [plugin Github repo](https://github.com/Dexerto/on-d
 
 
 == Changelog ==
+= 1.3.0 =
+- feat: Add ability to provide custom paths and tags per post type from @MuhammedAO
+- fix: prevent locales from being loaded too early @humet
 = 1.2.5 =
 - feat: prevent revalidate functions from running more than once within a single save_post request from @MuhammedAO
 - fix: tags array populated by paths filter from @cavemon

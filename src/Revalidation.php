@@ -43,7 +43,7 @@ class Revalidation {
 		if ( 'trash' === $data['post_status'] ) {
 			return;
 		}
-		
+
 		$old_permalink = get_permalink( $post_ID );
 		update_post_meta( $post_ID, '_old_permalink', $old_permalink );
 	}
@@ -65,23 +65,19 @@ class Revalidation {
 	 */
 	public static function handle_save_post( $post_id, $post ) {
 		$excluded_statuses = array( 'auto-draft', 'inherit', 'draft', 'trash' );
-		
+
 		if ( isset( $post->post_status ) && in_array( $post->post_status, $excluded_statuses, true ) ) {
 			return;
 		}
-		
+
 		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 			return;
 		}
-	
+
 		if ( false !== wp_is_post_revision( $post_id ) ) {
 			return;
 		}
 
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) { 
-			return; 
-		}
-		
 		self::revalidate_post( $post );
 	}
 
@@ -98,7 +94,7 @@ class Revalidation {
 
 			self::revalidate_post( $post );
 		}
-	}   
+	}
 
 	/**
 	 * Revalidates a post.
@@ -128,11 +124,40 @@ class Revalidation {
 			return new WP_Error( 'rest_forbidden', __( 'Fill Next.js URL and Revalidate Secret Key first.', 'on-demand-revalidation' ), array( 'status' => 401 ) );
 		}
 
+		$post_type = $post->post_type;
+
+		// Check if revalidation is enabled for this post type.
+		$individual_toggle = Settings::get( 'revalidate_enabled_' . $post_type, 'on', 'on_demand_revalidation_' . $post_type . '_settings' );
+		if ( 'on' !== $individual_toggle ) {
+			return (object) array(
+				'success' => false,
+				// translators: %s: post type slug, e.g. "post" or "page".
+				'message' => sprintf( __( 'Revalidation is disabled for %s.', 'on-demand-revalidation' ), $post_type ),
+			);
+		}
+
 		$paths = array();
 
-		if ( Settings::get( 'revalidate_homepage', 'on', 'on_demand_revalidation_post_update_settings' ) === 'on' ) {
+		$individual_homepage = Settings::get( 'revalidate_homepage_' . $post_type, null, 'on_demand_revalidation_' . $post_type . '_settings' );
+
+		if ( null === $individual_homepage ) {
+			// no per‑type override, use global.
+			$home_enabled = (
+				Settings::get(
+					'revalidate_homepage',
+					'on',
+					'on_demand_revalidation_post_update_settings'
+				) === 'on'
+			);
+		} else {
+			// use per‑type setting.
+			$home_enabled = ( 'on' === $individual_homepage );
+		}
+
+		if ( $home_enabled ) {
 			$paths[] = '/';
 		}
+
 
 		$post_permalink  = get_permalink( $post );
 		$parse_permalink = wp_parse_url( $post_permalink );
@@ -147,7 +172,7 @@ class Revalidation {
 
 		if ( ! empty( $old_permalink ) ) {
 			$parse_old_permalink = wp_parse_url( $old_permalink );
-		
+
 			if ( isset( $parse_old_permalink['path'] ) && '/' !== $parse_old_permalink['path'] ) {
 				$old_page_path = substr( $parse_old_permalink['path'], -1 ) === '/' ? substr( $parse_old_permalink['path'], 0, -1 ) : $parse_old_permalink['path'];
 				$paths[]       = $old_page_path;
@@ -157,7 +182,7 @@ class Revalidation {
 		$paths = array_unique( $paths );
 
 		$revalidate_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_post_update_settings' ) );
-		
+
 		if ( ! empty( $revalidate_paths ) ) {
 			$revalidate_paths = preg_split( '/\r\n|\n|\r/', $revalidate_paths );
 			$revalidate_paths = Helpers::rewrite_placeholders( $revalidate_paths, $post );
@@ -180,17 +205,40 @@ class Revalidation {
 			}
 		}
 
+		// per‑post‑type additional paths.
+		$post_type_raw_paths = Settings::get( 'revalidate_paths_' . $post_type, '', 'on_demand_revalidation_' . $post_type . '_settings' );
+		if ( ! empty( $post_type_raw_paths ) ) {
+			$post_type_defined_paths = preg_split( '/\r\n|\n|\r/', $post_type_raw_paths );
+			$post_type_defined_paths = Helpers::rewrite_placeholders( $post_type_defined_paths, $post );
+			foreach ( $post_type_defined_paths as $path ) {
+				if ( str_starts_with( $path, '/' ) ) {
+					$paths[] = $path;
+				}
+			}
+		}
+
 		$paths = apply_filters( 'on_demand_revalidation_paths', $paths, $post );
-		$tags  = apply_filters( 'on_demand_revalidation_tags', $tags, $post );
+
+
+
+			// per‑post‑type additional tags.
+		$post_type_raw_tags = Settings::get( 'revalidate_tags_' . $post_type, '', 'on_demand_revalidation_' . $post_type . '_settings' );
+		if ( ! empty( $post_type_raw_tags ) ) {
+			$post_type_defined_tags = preg_split( '/\r\n|\n|\r/', $post_type_raw_tags );
+			$post_type_defined_tags = Helpers::rewrite_placeholders( $post_type_defined_tags, $post );
+			$tags                   = array_merge( $tags, $post_type_defined_tags );
+		}
+
+		$tags = apply_filters( 'on_demand_revalidation_tags', $tags, $post );
 
 		$data = array(
 			'postId' => $post->ID,
 		);
-	
+
 		if ( ! empty( $paths ) ) {
 			$data['paths'] = $paths;
 		}
-	
+
 		if ( ! empty( $tags ) ) {
 			$data['tags'] = $tags;
 		}
@@ -218,10 +266,10 @@ class Revalidation {
 		}
 
 		if ( ! is_array( $response_data ) || ! isset( $response_data['revalidated'] ) ) {
-			return new WP_Error( 
-				'revalidate_error', 
-				'Invalid response from revalidation endpoint', 
-				array( 'status' => 403 ) 
+			return new WP_Error(
+				'revalidate_error',
+				'Invalid response from revalidation endpoint',
+				array( 'status' => 403 )
 			);
 		}
 

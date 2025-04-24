@@ -68,12 +68,13 @@ class Settings {
 	 * @return void
 	 */
 	public function register_settings() {
+		$tag_desc = 'One tag per row.<br/><br/><i>Available current placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code><code>%database_id%</code> <code>%id%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.';
 
 		$this->settings_api->register_section(
 			'on_demand_revalidation_default_settings',
 			array(
 				'title' => __( 'General', 'on-demand-revalidation' ),
-			) 
+			)
 		);
 
 		$this->settings_api->register_fields(
@@ -89,45 +90,11 @@ class Settings {
 					'label' => __( 'Revalidate Secret Key', 'on-demand-revalidation' ),
 					'type'  => 'password',
 				),
-			) 
-		);
 
-		$this->settings_api->register_section(
-			'on_demand_revalidation_post_update_settings',
-			array(
-				'title' => __( 'On post update', 'on-demand-revalidation' ),
-				'desc'  => __( 'On post update is current page revalidated automatically.', 'on-demand-revalidation' ),
-			) 
-		);
-
-		$this->settings_api->register_fields(
-			'on_demand_revalidation_post_update_settings',
-			array(
-				array(
-					'name'    => 'revalidate_homepage',
-					'desc'    => __( 'Revalidate Homepage on post update', 'on-demand-revalidation' ),
-					'type'    => 'checkbox',
-					'default' => 'on',
-				),
 				array(
 					'name' => 'disable_cron',
 					'desc' => __( "<b>Disable scheduled revalidation.</b> Revalidation triggered immediately without using WP-Cron. It'll slow down post update.", 'on-demand-revalidation' ),
 					'type' => 'checkbox',
-				),
-				array(
-					'name'        => 'revalidate_paths',
-					'label'       => __( 'Additional paths to revalidate on Post update', 'on-demand-revalidation' ),
-					'desc'        => 'One path per row.',
-					'placeholder' => '/category/%category%',
-					'type'        => 'textarea',
-				),
-			
-				array(
-					'name'        => 'revalidate_tags',
-					'label'       => __( 'Tags to revalidate on Post update', 'on-demand-revalidation' ),
-					'desc'        => 'One tag per row.<br/><br/><i>Available current Post placeholders:</i><br/><code>%slug%</code> <code>%author_nicename%</code> <code>%author_username%</code> <code>%category%</code> <code>%post_tag%</code><code>%database_id%</code> <code>%id%</code> <code>%custom_taxonomy%</code><br/><br/><i>Note:</i> Replace <code>%custom_taxonomy%</code> with your custom taxonomy name.',
-					'placeholder' => '%databaseid%',
-					'type'        => 'textarea',
 				),
 
 				array(
@@ -136,8 +103,99 @@ class Settings {
 					'desc'  => '<a id="on-demand-revalidation-post-update-test" class="button button-primary" style="margin-bottom: 15px;">Revalidate Latest Post</a>',
 					'type'  => 'html',
 				),
-			) 
+			)
 		);
+
+		$this->settings_api->register_section(
+			'on_demand_revalidation_post_update_settings',
+			array(
+				'title' => __( 'All Settings', 'on-demand-revalidation' ),
+				'desc'  => __( 'Revalidation settings for all post types.', 'on-demand-revalidation' ),
+			)
+		);
+
+		$this->settings_api->register_fields(
+			'on_demand_revalidation_post_update_settings',
+			array(
+				array(
+					'name'    => 'revalidate_homepage',
+					'desc'    => __( 'Revalidate homepage on all post updates', 'on-demand-revalidation' ),
+					'type'    => 'checkbox',
+					'default' => 'on',
+				),
+
+				array(
+					'name'        => 'revalidate_paths',
+					'label'       => __( 'Paths to revalidate on all updates', 'on-demand-revalidation' ),
+					'desc'        => 'One path per row.',
+					'placeholder' => '/category/%category%',
+					'type'        => 'textarea',
+				),
+
+				array(
+					'name'        => 'revalidate_tags',
+					'label'       => __( 'Tags to revalidate on all updates', 'on-demand-revalidation' ),
+					'desc'        => $tag_desc,
+					'placeholder' => '%databaseid%',
+					'type'        => 'textarea',
+				),
+
+
+			)
+		);
+
+		$post_types = get_post_types( array( 'public' => true ), 'objects' );
+		foreach ( $post_types as $post_type_obj ) {
+
+			if ( 'attachment' === $post_type_obj->name ) {
+				continue;
+			}
+			$section_id = 'on_demand_revalidation_' . $post_type_obj->name . '_settings';
+			$this->settings_api->register_section(
+				$section_id,
+				array(
+					// translators: %s: plural name of the post type, e.g. "Posts" or "Books".
+					'title' => sprintf( __( '%s Settings', 'on-demand-revalidation', ), $post_type_obj->labels->name ),
+					// translators: %s: singular name of the post type, e.g. "Post" or "Book".
+					'desc'  => sprintf( __( 'Revalidation settings specific to %s posts.', 'on-demand-revalidation', ), $post_type_obj->labels->singular_name ),
+				)
+			);
+			$this->settings_api->register_fields(
+				$section_id,
+				array(
+					array(
+						'name'    => 'revalidate_enabled_' . $post_type_obj->name,
+						// translators: %s: singular post type name, used in the checkbox label.
+						'desc'    => sprintf( __( 'Enable revalidation for %s', 'on-demand-revalidation' ), $post_type_obj->labels->singular_name ),
+						'type'    => 'checkbox',
+						'default' => 'on',
+					),
+					array(
+						'name'    => 'revalidate_homepage_' . $post_type_obj->name,
+						// translators: %s: singular post type name, used in the textarea label.
+						'desc'    => sprintf( __( 'Revalidate Homepage on all updates for %s', 'on-demand-revalidation' ), $post_type_obj->labels->singular_name ),
+						'type'    => 'checkbox',
+						'default' => 'on',
+					),
+					array(
+						'name'        => 'revalidate_paths_' . $post_type_obj->name,
+						// translators: %s: singular post type name, used in the textarea label.
+						'label'       => sprintf( __( 'Additional paths for %s', 'on-demand-revalidation' ), $post_type_obj->labels->singular_name ),
+						'desc'        => __( 'One path per row. Leave empty if not applicable.', 'on-demand-revalidation' ),
+						'placeholder' => '/custom/path/$placeholder%/',
+						'type'        => 'textarea',
+					),
+					array(
+						'name'        => 'revalidate_tags_' . $post_type_obj->name,
+						// translators: %s: singular post type name, used in the textarea label.
+						'label'       => sprintf( __( 'Tags for %s', 'on-demand-revalidation' ), $post_type_obj->labels->singular_name ),
+						'desc'        => $tag_desc,
+						'placeholder' => '%slug%',
+						'type'        => 'textarea',
+					),
+				)
+			);
+		}
 	}
 
 	/**
