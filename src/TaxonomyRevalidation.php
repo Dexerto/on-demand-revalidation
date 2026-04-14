@@ -163,7 +163,7 @@ class TaxonomyRevalidation {
 
 		if ( ! empty( $last['success'] ) ) {
 			printf(
-				'<div class="notice notice-success is-dismissible"><p><strong>Revalidation triggered</strong> %s ago &mdash; paths sent: %s</p></div>',
+				'<div class="notice notice-success is-dismissible"><p><strong>Revalidation triggered</strong> %s ago &mdash; paths: %s</p></div>',
 				esc_html( $time_ago ),
 				$paths // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			);
@@ -251,8 +251,8 @@ class TaxonomyRevalidation {
 	/**
 	 * Performs the revalidation HTTP request for a given term synchronously.
 	 *
-	 * Revalidates the taxonomy landing page and homepage by default.
-	 * Use the `dexerto_taxonomy_revalidation_paths` filter to add further surfaces.
+	 * Reads paths and tags from the plugin settings (global taxonomy settings and
+	 * per-taxonomy settings), replaces placeholders, and sends them to the API.
 	 *
 	 * @param int    $term_id  The term ID.
 	 * @param string $taxonomy The taxonomy slug.
@@ -264,23 +264,67 @@ class TaxonomyRevalidation {
 		$term         = get_term( $term_id, $taxonomy );
 		$term_name    = $term instanceof \WP_Term ? $term->name : "Term $term_id";
 
-		if ( empty( $frontend_url ) || empty( $secret ) ) {
+		if ( empty( $frontend_url ) || empty( $secret ) || ! $term instanceof \WP_Term ) {
 			return;
 		}
 
-		$paths    = self::build_revalidation_paths( $term_id, $taxonomy );
+		$paths = array();
+		$tags  = array();
+
+		// Global taxonomy paths.
+		$global_raw_paths = trim( Settings::get( 'revalidate_taxonomy_paths', '', 'on_demand_revalidation_taxonomy_settings' ) );
+		if ( ! empty( $global_raw_paths ) ) {
+			foreach ( self::rewrite_placeholders( preg_split( '/\r\n|\n|\r/', $global_raw_paths ), $term ) as $path ) {
+				if ( str_starts_with( $path, '/' ) ) {
+					$paths[] = $path;
+				}
+			}
+		}
+
+		// Per-taxonomy paths.
+		$per_tax_raw_paths = trim( Settings::get( 'revalidate_paths', '', 'on_demand_revalidation_' . $taxonomy . '_taxonomy_settings' ) );
+		if ( ! empty( $per_tax_raw_paths ) ) {
+			foreach ( self::rewrite_placeholders( preg_split( '/\r\n|\n|\r/', $per_tax_raw_paths ), $term ) as $path ) {
+				if ( str_starts_with( $path, '/' ) ) {
+					$paths[] = $path;
+				}
+			}
+		}
+
+		// Global taxonomy tags.
+		$global_raw_tags = trim( Settings::get( 'revalidate_taxonomy_tags', '', 'on_demand_revalidation_taxonomy_settings' ) );
+		if ( ! empty( $global_raw_tags ) ) {
+			$tags = array_merge( $tags, self::rewrite_placeholders( preg_split( '/\r\n|\n|\r/', $global_raw_tags ), $term ) );
+		}
+
+		// Per-taxonomy tags.
+		$per_tax_raw_tags = trim( Settings::get( 'revalidate_tags', '', 'on_demand_revalidation_' . $taxonomy . '_taxonomy_settings' ) );
+		if ( ! empty( $per_tax_raw_tags ) ) {
+			$tags = array_merge( $tags, self::rewrite_placeholders( preg_split( '/\r\n|\n|\r/', $per_tax_raw_tags ), $term ) );
+		}
+
+		$paths    = array_values( array_unique( array_filter( $paths ) ) );
+		$tags     = array_values( array_unique( array_filter( $tags ) ) );
 		$endpoint = rtrim( $frontend_url, '/' ) . '/api/revalidate';
 
-		if ( empty( $paths ) ) {
-			self::log_revalidation_result( $term_id, $term_name, $taxonomy, array(), $endpoint, new \WP_Error( 'no_paths', 'Could not resolve a revalidation path for this term. Check that permalink structure is configured.' ) );
+		if ( empty( $paths ) && empty( $tags ) ) {
+			self::log_revalidation_result( $term_id, $term_name, $taxonomy, array(), array(), $endpoint, new \WP_Error( 'no_config', 'No paths or tags configured for this taxonomy. Add them in the On-Demand Revalidation settings.' ) );
 			return;
+		}
+
+		$data = array();
+		if ( ! empty( $paths ) ) {
+			$data['paths'] = $paths;
+		}
+		if ( ! empty( $tags ) ) {
+			$data['tags'] = $tags;
 		}
 
 		$response = wp_remote_request(
 			$endpoint,
 			array(
 				'method'  => 'PUT',
-				'body'    => wp_json_encode( array( 'paths' => $paths ) ),
+				'body'    => wp_json_encode( $data ),
 				'headers' => array(
 					'Authorization' => 'Bearer ' . $secret,
 					'Content-Type'  => 'application/json',
@@ -288,57 +332,38 @@ class TaxonomyRevalidation {
 			)
 		);
 
-		self::log_revalidation_result(
-			$term_id,
-			$term_name,
-			$taxonomy,
-			$paths,
-			$endpoint,
-			$response
-		);
+		self::log_revalidation_result( $term_id, $term_name, $taxonomy, $paths, $tags, $endpoint, $response );
 	}
 
 	/**
-	 * Builds the list of paths to revalidate for a given term.
+	 * Replaces term placeholders in an array of path/tag strings.
 	 *
-	 * @param int    $term_id  The term ID.
-	 * @param string $taxonomy The taxonomy slug.
-	 * @return string[] Filtered list of paths, or empty array on failure.
+	 * Supported placeholders:
+	 * - %slug%     — term slug
+	 * - %taxonomy% — taxonomy slug
+	 * - %term_id%  — numeric term ID
+	 *
+	 * @param string[] $items Strings containing placeholders.
+	 * @param \WP_Term $term  The term being revalidated.
+	 * @return string[]
 	 */
-	public static function build_revalidation_paths( int $term_id, string $taxonomy ): array {
-		$term = get_term( $term_id, $taxonomy );
-		if ( ! $term instanceof \WP_Term ) {
-			return array();
+	private static function rewrite_placeholders( array $items, \WP_Term $term ): array {
+		$replacements = array(
+			'%slug%'     => $term->slug,
+			'%taxonomy%' => $term->taxonomy,
+			'%term_id%'  => (string) $term->term_id,
+		);
+
+		$result = array();
+		foreach ( $items as $item ) {
+			$item = trim( $item );
+			if ( '' === $item ) {
+				continue;
+			}
+			$result[] = str_replace( array_keys( $replacements ), array_values( $replacements ), $item );
 		}
 
-		$term_link = get_term_link( $term );
-		if ( is_wp_error( $term_link ) ) {
-			return array();
-		}
-
-		$path = wp_parse_url( $term_link, PHP_URL_PATH );
-		if ( empty( $path ) || '/' === $path ) {
-			return array();
-		}
-
-		$path = rtrim( $path, '/' );
-
-		/**
-		 * Filters the list of paths to revalidate for a given term.
-		 *
-		 * Defaults to the taxonomy landing page + homepage. Add further dependent surfaces
-		 * (e.g. hub pages, listing aggregators) via this filter.
-		 *
-		 * @param string[] $paths Array of paths, e.g. ['/category/esports', '/'].
-		 * @param \WP_Term $term  The term being updated.
-		 */
-		$filtered = apply_filters( 'dexerto_taxonomy_revalidation_paths', array( $path, '/' ), $term );
-
-		if ( ! is_array( $filtered ) ) {
-			return array( $path, '/' );
-		}
-
-		return array_values( array_unique( array_filter( $filtered, fn( $p ) => is_string( $p ) && '' !== $p ) ) );
+		return $result;
 	}
 
 	/**
@@ -349,11 +374,12 @@ class TaxonomyRevalidation {
 	 * @param string          $term_name The term name.
 	 * @param string          $taxonomy  The taxonomy slug.
 	 * @param string[]        $paths     Paths that were submitted.
+	 * @param string[]        $tags      Tags that were submitted.
 	 * @param string          $endpoint  The API endpoint called.
 	 * @param array|\WP_Error $response  The wp_remote_request() response.
 	 * @return void
 	 */
-	public static function log_revalidation_result( int $term_id, string $term_name, string $taxonomy, array $paths, string $endpoint, array|\WP_Error $response ): void {
+	public static function log_revalidation_result( int $term_id, string $term_name, string $taxonomy, array $paths, array $tags, string $endpoint, array|\WP_Error $response ): void {
 		$is_wp_error = is_wp_error( $response );
 		$http_code   = $is_wp_error ? 0 : (int) wp_remote_retrieve_response_code( $response );
 		$body        = $is_wp_error ? null : json_decode( wp_remote_retrieve_body( $response ), true );
@@ -365,6 +391,7 @@ class TaxonomyRevalidation {
 			'term_name' => $term_name,
 			'taxonomy'  => $taxonomy,
 			'paths'     => $paths,
+			'tags'      => $tags,
 			'endpoint'  => $endpoint,
 			'http_code' => $http_code,
 			'success'   => $success,
@@ -500,6 +527,7 @@ class TaxonomyRevalidation {
 					<th>Term</th>
 					<th>Taxonomy</th>
 					<th>Paths</th>
+					<th>Tags</th>
 					<th>HTTP</th>
 					<th>Result</th>
 				</tr>
@@ -508,11 +536,14 @@ class TaxonomyRevalidation {
 			<?php foreach ( $log as $entry ) : ?>
 				<?php
 				$success = ! empty( $entry['success'] );
-				// $time_label is run through esc_html() at assignment. $paths_list values are run through esc_html() inside array_map.
+				// $time_label, $paths_list, $tags_list are escaped at assignment via esc_html() inside array_map.
 				$time_label = isset( $entry['timestamp'] ) ? esc_html( human_time_diff( $entry['timestamp'] ) . ' ago' ) : '—';
 				$http_code  = ! empty( $entry['http_code'] ) ? $entry['http_code'] : '—';
-				$paths_list = ! empty( $entry['paths'] )
+				$paths_list = ! empty( $entry['paths'] ) && is_array( $entry['paths'] )
 					? implode( '<br>', array_map( fn( $p ) => '<code>' . esc_html( $p ) . '</code>', $entry['paths'] ) )
+					: '—';
+				$tags_list  = ! empty( $entry['tags'] ) && is_array( $entry['tags'] )
+					? implode( '<br>', array_map( fn( $t ) => '<code>' . esc_html( $t ) . '</code>', $entry['tags'] ) )
 					: '—';
 				?>
 				<tr<?php echo $success ? '' : ' style="background:#fff0f0;"'; ?>>
@@ -523,6 +554,7 @@ class TaxonomyRevalidation {
 					</td>
 					<td><code><?php echo esc_html( $entry['taxonomy'] ?? '—' ); ?></code></td>
 					<td><?php echo $paths_list; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+					<td><?php echo $tags_list; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 					<td><?php echo esc_html( (string) $http_code ); ?></td>
 					<td>
 						<?php if ( $success ) : ?>
