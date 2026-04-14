@@ -3,7 +3,7 @@ Contributors: bebjakub
 Tags: nextjs, ssg, revalidation, on-demand
 Requires at least: 6.0.0
 Tested up to: 6.7.2
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 Requires PHP: 8.0
 License: GPL-3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -24,6 +24,8 @@ Feel free to create a PR to [plugin Github repo](https://github.com/Dexerto/on-d
 
 
 == Changelog ==
+= 1.4.0 =
+- feat: Add taxonomy term revalidation — automatically revalidates taxonomy landing pages when terms are updated, toggleable via the On-Demand Revalidation settings from @MuhammedAO
 = 1.3.0 =
 - feat: Add ability to provide custom paths and tags per post type from @MuhammedAO
 - fix: prevent locales from being loaded too early @humet
