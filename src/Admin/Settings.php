@@ -98,6 +98,16 @@ class Settings {
 				),
 
 				array(
+					'name' => 'taxonomy_revalidation_enabled',
+					'desc' => sprintf(
+						/* translators: %s: URL to the Taxonomy Revalidation tools page. */
+						__( '<b>Enable taxonomy revalidation.</b> Automatically revalidates taxonomy landing pages when terms are updated. Status and activity log available under <a href="%s">Tools &rarr; Taxonomy Revalidation</a>.', 'on-demand-revalidation' ),
+						admin_url( 'tools.php?page=dexerto-taxonomy-revalidation' )
+					),
+					'type' => 'checkbox',
+				),
+
+				array(
 					'name'  => 'test-config',
 					'label' => __( 'Test your config:', 'on-demand-revalidation' ),
 					'desc'  => '<a id="on-demand-revalidation-post-update-test" class="button button-primary" style="margin-bottom: 15px;">Revalidate Latest Post</a>',
