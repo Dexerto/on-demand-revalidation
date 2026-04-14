@@ -34,7 +34,6 @@ class TaxonomyRevalidation {
 
 		add_action( 'edited_term', array( self::class, 'on_term_updated' ), 10, 3 );
 		add_action( 'acf/save_post', array( self::class, 'on_acf_term_save' ), 20 );
-		add_action( 'dexerto_taxonomy_revalidation_trigger', array( self::class, 'revalidate_term' ), 10, 2 );
 	}
 
 	/**
@@ -152,15 +151,17 @@ class TaxonomyRevalidation {
 		}
 
 		// Only show if the result is fresh (within the last 2 minutes).
-		if ( time() - $last['timestamp'] > 120 ) {
+		$timestamp = isset( $last['timestamp'] ) && is_numeric( $last['timestamp'] ) ? (int) $last['timestamp'] : 0;
+		if ( ! $timestamp || time() - $timestamp > 120 ) {
 			return;
 		}
 
-		$time_ago = human_time_diff( $last['timestamp'] );
+		$time_ago = human_time_diff( $timestamp );
 		// Each path is run through esc_html() inside the array_map — the wrapping <code> tags are safe literals.
-		$paths = implode( ', ', array_map( fn( $p ) => '<code>' . esc_html( $p ) . '</code>', $last['paths'] ) );
+		$raw_paths = isset( $last['paths'] ) && is_array( $last['paths'] ) ? $last['paths'] : array();
+		$paths     = $raw_paths ? implode( ', ', array_map( fn( $p ) => '<code>' . esc_html( $p ) . '</code>', $raw_paths ) ) : '—';
 
-		if ( $last['success'] ) {
+		if ( ! empty( $last['success'] ) ) {
 			printf(
 				'<div class="notice notice-success is-dismissible"><p><strong>Revalidation triggered</strong> %s ago &mdash; paths sent: %s</p></div>',
 				esc_html( $time_ago ),
@@ -171,7 +172,7 @@ class TaxonomyRevalidation {
 			printf(
 				'<div class="notice notice-error is-dismissible"><p><strong>Revalidation failed</strong> %s ago (HTTP %s) &mdash; %s. <a href="%s">View log &rarr;</a></p></div>',
 				esc_html( $time_ago ),
-				esc_html( (string) $last['http_code'] ),
+				esc_html( (string) ( $last['http_code'] ?? 0 ) ),
 				esc_html( $error ),
 				esc_url( admin_url( 'tools.php?page=dexerto-taxonomy-revalidation' ) )
 			);
@@ -179,7 +180,7 @@ class TaxonomyRevalidation {
 	}
 
 	/**
-	 * Fires when a term is saved via WordPress core. Schedules an async revalidation.
+	 * Fires when a term is saved via WordPress core. Triggers immediate revalidation.
 	 *
 	 * @param int    $term_id  The term ID.
 	 * @param int    $tt_id    Term taxonomy ID (unused).
@@ -248,7 +249,7 @@ class TaxonomyRevalidation {
 	}
 
 	/**
-	 * Performs the revalidation HTTP request for a given term. Runs via WP-Cron.
+	 * Performs the revalidation HTTP request for a given term synchronously.
 	 *
 	 * Revalidates the taxonomy landing page and homepage by default.
 	 * Use the `dexerto_taxonomy_revalidation_paths` filter to add further surfaces.
@@ -356,7 +357,7 @@ class TaxonomyRevalidation {
 		$is_wp_error = is_wp_error( $response );
 		$http_code   = $is_wp_error ? 0 : (int) wp_remote_retrieve_response_code( $response );
 		$body        = $is_wp_error ? null : json_decode( wp_remote_retrieve_body( $response ), true );
-		$success     = ! $is_wp_error && $http_code >= 200 && $http_code < 300 && ! empty( $body['revalidated'] );
+		$success     = ! $is_wp_error && $http_code >= 200 && $http_code < 300 && is_array( $body ) && ! empty( $body['revalidated'] );
 
 		$entry = array(
 			'timestamp' => time(),
@@ -369,7 +370,7 @@ class TaxonomyRevalidation {
 			'success'   => $success,
 			'error'     => $is_wp_error
 				? $response->get_error_message()
-				: ( ! $success ? ( $body['message'] ?? 'Unexpected response from revalidation endpoint' ) : null ),
+				: ( ! $success ? ( is_array( $body ) ? ( $body['message'] ?? 'Unexpected response from revalidation endpoint' ) : 'Unexpected response from revalidation endpoint' ) : null ),
 		);
 
 		update_term_meta( $term_id, '_dexerto_tax_reval_last', $entry );
