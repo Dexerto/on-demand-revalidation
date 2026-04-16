@@ -99,11 +99,7 @@ class Settings {
 
 				array(
 					'name' => 'taxonomy_revalidation_enabled',
-					'desc' => sprintf(
-						/* translators: %s: URL to the Taxonomy Revalidation tools page. */
-						__( '<b>Enable taxonomy revalidation.</b> Automatically revalidates taxonomy landing pages when terms are updated. Status and activity log available under <a href="%s">Tools &rarr; Taxonomy Revalidation</a>.', 'on-demand-revalidation' ),
-						admin_url( 'tools.php?page=dexerto-taxonomy-revalidation' )
-					),
+					'desc' => __( '<b>Enable taxonomy revalidation.</b> Automatically revalidates taxonomy landing pages when terms are updated. Activity log available on the Taxonomy Revalidation Log tab.', 'on-demand-revalidation' ),
 					'type' => 'checkbox',
 				),
 
@@ -184,7 +180,7 @@ class Settings {
 			)
 		);
 
-		$excluded_taxonomies = array( 'post_format', 'link_category', 'nav_menu', 'evergreen_menu_location' );
+		$excluded_taxonomies = apply_filters( 'on_demand_revalidation_excluded_taxonomies', array( 'post_format', 'link_category', 'nav_menu', 'evergreen_menu_location' ) );
 		$taxonomies          = get_taxonomies( array( 'public' => true ), 'objects' );
 		foreach ( $taxonomies as $taxonomy_obj ) {
 			if ( in_array( $taxonomy_obj->name, $excluded_taxonomies, true ) ) {
@@ -224,6 +220,14 @@ class Settings {
 				)
 			);
 		}
+
+		$this->settings_api->register_section(
+			'on_demand_revalidation_taxonomy_log',
+			array(
+				'title'    => __( 'Taxonomy Revalidation Log', 'on-demand-revalidation' ),
+				'callback' => array( \OnDemandRevalidation\TaxonomyRevalidation::class, 'render_revalidation_log' ),
+			)
+		);
 
 		$post_types = get_post_types( array( 'public' => true ), 'objects' );
 		foreach ( $post_types as $post_type_obj ) {
