@@ -217,7 +217,7 @@ class TaxonomyRevalidation {
 	 * @param array|\WP_Error $response  The wp_remote_request() response.
 	 * @return void
 	 */
-	public static function log_revalidation_result( int $term_id, string $term_name, string $taxonomy, array $paths, array $tags, string $endpoint, array|\WP_Error $response ): void {
+	private static function log_revalidation_result( int $term_id, string $term_name, string $taxonomy, array $paths, array $tags, string $endpoint, array|\WP_Error $response ): void {
 		$is_wp_error = is_wp_error( $response );
 		$http_code   = $is_wp_error ? 0 : (int) wp_remote_retrieve_response_code( $response );
 		$body        = $is_wp_error ? null : json_decode( wp_remote_retrieve_body( $response ), true );
