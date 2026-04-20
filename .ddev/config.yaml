@@ -1,0 +1,17 @@
+name: on-demand-revalidation
+type: wordpress
+docroot: wordpress
+php_version: "8.2"
+webserver_type: apache-fpm
+database:
+  type: mariadb
+  version: "10.11"
+nodejs_version: "20"
+corepack_enable: false
+xdebug_enabled: false
+web_environment:
+  - WP_CLI_CACHE_DIR=/tmp/.wp-cli-cache
+hooks:
+  post-start:
+    - exec: /var/www/html/.ddev/scripts/wp-setup.sh
+    - composer: install

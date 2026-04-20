@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Listen for Xdebug",
+      "name": "Listen for Xdebug (DDEV)",
       "type": "php",
       "request": "launch",
       "port": 9003,
       "pathMappings": {
-        "/var/www/html/wp-content/plugins/plugin-dev": "${workspaceFolder}"
+        "/var/www/html": "${workspaceFolder}"
       },
       "log": true,
       "ignore": ["**/vendor/**/*.php"],

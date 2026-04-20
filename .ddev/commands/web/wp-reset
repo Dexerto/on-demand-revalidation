@@ -1,0 +1,18 @@
+#!/bin/bash
+## Description: Wipe WordPress state and re-run the plugin-dev bootstrap.
+## Usage: wp-reset
+## Example: "ddev wp-reset"
+
+set -euo pipefail
+
+echo "Dropping and recreating the database..."
+wp db reset --yes --path=/var/www/html/wordpress || true
+
+echo "Removing wp-config.php so setup recreates it..."
+rm -f /var/www/html/wordpress/wp-config.php
+
+echo "Removing generated mu-plugin so setup recreates it..."
+rm -f /var/www/html/wordpress/wp-content/mu-plugins/custom-post-types.php
+
+echo "Running bootstrap..."
+/var/www/html/.ddev/scripts/wp-setup.sh
