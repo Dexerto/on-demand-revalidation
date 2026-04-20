@@ -1,6 +1,10 @@
 /.git
 /.github
 /.wordpress-org
+/.ddev
+/.vscode
+/wordpress
+/logs
 
 .distignore
 .gitignore

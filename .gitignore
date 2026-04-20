@@ -14,6 +14,19 @@ yarn-error.log
 # WordPress
 wp-config.php
 /wp-content/
+/wordpress/
+
+# DDEV
+/.ddev/.*
+/.ddev/db_snapshots/
+/.ddev/apache/
+/.ddev/nginx_full/
+/.ddev/homeadditions/
+/.ddev/providers/
+/.ddev/import-db/
+/.ddev/import.yaml
+/.ddev/config.*.yaml
+!/.ddev/config.yaml
 
 # Environment files
 .env
