@@ -6,7 +6,7 @@
  * Plugin URI:          https://wordpress.org/plugins/on-demand-revalidation
  * GitHub Plugin URI:   https://github.com/dexerto/on-demand-revalidation
  * Description:         Next.js On-Demand Revalidation on the post update, revalidate specific paths, tags on the post update.
- * Version:             1.3.0
+ * Version:             1.4.0
  * Author:              Dexerto
  * Author URI:          https://dexerto.com
  * Text Domain:         on-demand-revalidation
@@ -53,6 +53,7 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 				if ( self::$instance->includes() ) {
 					self::$instance->settings();
 					self::$instance->revalidation();
+					self::$instance->taxonomy_revalidation();
 					self::$instance->plugin_links();
 					self::$instance->load_textdomain();
 
@@ -207,6 +208,15 @@ if ( ! class_exists( 'OnDemandRevalidation' ) ) :
 		 */
 		private function revalidation(): void {
 			\OnDemandRevalidation\Revalidation::init();
+		}
+
+		/**
+		 * Set up Taxonomy Revalidation.
+		 *
+		 * @since 1.4.0
+		 */
+		private function taxonomy_revalidation(): void {
+			\OnDemandRevalidation\TaxonomyRevalidation::init();
 		}
 
 

@@ -98,6 +98,12 @@ class Settings {
 				),
 
 				array(
+					'name' => 'taxonomy_revalidation_enabled',
+					'desc' => __( '<b>Enable taxonomy revalidation.</b> Automatically revalidates taxonomy landing pages when terms are updated.', 'on-demand-revalidation' ),
+					'type' => 'checkbox',
+				),
+
+				array(
 					'name'  => 'test-config',
 					'label' => __( 'Test your config:', 'on-demand-revalidation' ),
 					'desc'  => '<a id="on-demand-revalidation-post-update-test" class="button button-primary" style="margin-bottom: 15px;">Revalidate Latest Post</a>',
@@ -143,6 +149,96 @@ class Settings {
 
 			)
 		);
+
+		if ( self::get( 'taxonomy_revalidation_enabled' ) === 'on' ) :
+
+			$taxonomy_tag_desc = 'One tag per row.<br/><br/><i>Available placeholders:</i><br/><code>%slug%</code> <code>%taxonomy%</code> <code>%term_id%</code>';
+
+			$this->settings_api->register_section(
+				'on_demand_revalidation_taxonomy_settings',
+				array(
+					'title' => __( 'All Taxonomy Settings', 'on-demand-revalidation' ),
+					'desc'  => __( 'Revalidation settings applied on every taxonomy term update.', 'on-demand-revalidation' ),
+				)
+			);
+
+			$this->settings_api->register_fields(
+				'on_demand_revalidation_taxonomy_settings',
+				array(
+					array(
+						'name'        => 'revalidate_taxonomy_paths',
+						'label'       => __( 'Paths to revalidate on all taxonomy updates', 'on-demand-revalidation' ),
+						'desc'        => 'One path per row.',
+						'placeholder' => '/category/%slug%',
+						'type'        => 'textarea',
+					),
+					array(
+						'name'        => 'revalidate_taxonomy_tags',
+						'label'       => __( 'Tags to revalidate on all taxonomy updates', 'on-demand-revalidation' ),
+						'desc'        => $taxonomy_tag_desc,
+						'placeholder' => '%slug%',
+						'type'        => 'textarea',
+					),
+				)
+			);
+
+			$excluded_taxonomies = apply_filters( 'on_demand_revalidation_excluded_taxonomies', array( 'post_format', 'link_category', 'nav_menu', 'evergreen_menu_location' ) );
+			$excluded_taxonomies = is_array( $excluded_taxonomies ) ? $excluded_taxonomies : array();
+			$taxonomies          = get_taxonomies( array( 'public' => true ), 'objects' );
+			foreach ( $taxonomies as $taxonomy_obj ) {
+				if ( in_array( $taxonomy_obj->name, $excluded_taxonomies, true ) ) {
+					continue;
+				}
+
+				$tax_section_id = 'on_demand_revalidation_' . $taxonomy_obj->name . '_taxonomy_settings';
+				$this->settings_api->register_section(
+					$tax_section_id,
+					array(
+						// translators: %s: plural name of the taxonomy, e.g. "Categories".
+						'title' => sprintf( __( '%s Taxonomy Settings', 'on-demand-revalidation' ), $taxonomy_obj->labels->name ),
+						// translators: %s: singular name of the taxonomy, e.g. "Category".
+						'desc'  => sprintf( __( 'Revalidation settings specific to %s term updates.', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
+					)
+				);
+
+				$this->settings_api->register_fields(
+					$tax_section_id,
+					array(
+						array(
+							'name'    => 'revalidate_enabled',
+							// translators: %s: singular taxonomy name, e.g. "Category".
+							'desc'    => sprintf( __( 'Enable revalidation for %s', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
+							'type'    => 'checkbox',
+							'default' => 'on',
+						),
+						array(
+							'name'    => 'revalidate_homepage',
+							// translators: %s: singular taxonomy name, e.g. "Category".
+							'desc'    => sprintf( __( 'Revalidate Homepage on all updates for %s', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
+							'type'    => 'checkbox',
+							'default' => 'on',
+						),
+						array(
+							'name'        => 'revalidate_paths',
+							// translators: %s: singular taxonomy name, e.g. "Category".
+							'label'       => sprintf( __( 'Additional paths for %s', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
+							'desc'        => __( 'One path per row. Leave empty if not applicable.', 'on-demand-revalidation' ),
+							'placeholder' => '/category/%slug%',
+							'type'        => 'textarea',
+						),
+						array(
+							'name'        => 'revalidate_tags',
+							// translators: %s: singular taxonomy name, e.g. "Category".
+							'label'       => sprintf( __( 'Tags for %s', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
+							'desc'        => $taxonomy_tag_desc,
+							'placeholder' => '%slug%',
+							'type'        => 'textarea',
+						),
+					)
+				);
+			}
+
+		endif;
 
 		$post_types = get_post_types( array( 'public' => true ), 'objects' );
 		foreach ( $post_types as $post_type_obj ) {
