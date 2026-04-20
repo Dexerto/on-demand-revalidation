@@ -67,6 +67,10 @@ class TaxonomyRevalidation {
 			return;
 		}
 
+		if ( 'on' !== Settings::get( 'revalidate_enabled', 'on', 'on_demand_revalidation_' . $taxonomy . '_taxonomy_settings' ) ) {
+			return;
+		}
+
 		self::maybe_schedule_revalidation( $term_id, $taxonomy );
 	}
 
@@ -146,6 +150,10 @@ class TaxonomyRevalidation {
 		$per_tax_raw_tags = trim( Settings::get( 'revalidate_tags', '', 'on_demand_revalidation_' . $taxonomy . '_taxonomy_settings' ) );
 		if ( ! empty( $per_tax_raw_tags ) ) {
 			$tags = array_merge( $tags, self::rewrite_placeholders( preg_split( '/\r\n|\n|\r/', $per_tax_raw_tags ), $term ) );
+		}
+
+		if ( 'on' === Settings::get( 'revalidate_homepage', null, 'on_demand_revalidation_' . $taxonomy . '_taxonomy_settings' ) ) {
+			$paths[] = '/';
 		}
 
 		$paths    = array_values( array_unique( array_filter( $paths ) ) );

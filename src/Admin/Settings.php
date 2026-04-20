@@ -205,6 +205,20 @@ class Settings {
 					$tax_section_id,
 					array(
 						array(
+							'name'    => 'revalidate_enabled',
+							// translators: %s: singular taxonomy name, e.g. "Category".
+							'desc'    => sprintf( __( 'Enable revalidation for %s', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
+							'type'    => 'checkbox',
+							'default' => 'on',
+						),
+						array(
+							'name'    => 'revalidate_homepage',
+							// translators: %s: singular taxonomy name, e.g. "Category".
+							'desc'    => sprintf( __( 'Revalidate Homepage on all updates for %s', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
+							'type'    => 'checkbox',
+							'default' => 'on',
+						),
+						array(
 							'name'        => 'revalidate_paths',
 							// translators: %s: singular taxonomy name, e.g. "Category".
 							'label'       => sprintf( __( 'Additional paths for %s', 'on-demand-revalidation' ), $taxonomy_obj->labels->singular_name ),
