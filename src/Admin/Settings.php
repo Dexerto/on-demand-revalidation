@@ -99,7 +99,7 @@ class Settings {
 
 				array(
 					'name' => 'taxonomy_revalidation_enabled',
-					'desc' => __( '<b>Enable taxonomy revalidation.</b> Automatically revalidates taxonomy landing pages when terms are updated. Activity log available on the Taxonomy Revalidation Log tab.', 'on-demand-revalidation' ),
+					'desc' => __( '<b>Enable taxonomy revalidation.</b> Automatically revalidates taxonomy landing pages when terms are updated.', 'on-demand-revalidation' ),
 					'type' => 'checkbox',
 				),
 
@@ -183,6 +183,7 @@ class Settings {
 			);
 
 			$excluded_taxonomies = apply_filters( 'on_demand_revalidation_excluded_taxonomies', array( 'post_format', 'link_category', 'nav_menu', 'evergreen_menu_location' ) );
+			$excluded_taxonomies = is_array( $excluded_taxonomies ) ? $excluded_taxonomies : array();
 			$taxonomies          = get_taxonomies( array( 'public' => true ), 'objects' );
 			foreach ( $taxonomies as $taxonomy_obj ) {
 				if ( in_array( $taxonomy_obj->name, $excluded_taxonomies, true ) ) {
@@ -222,14 +223,6 @@ class Settings {
 					)
 				);
 			}
-
-			$this->settings_api->register_section(
-				'on_demand_revalidation_taxonomy_log',
-				array(
-					'title'    => __( 'Taxonomy Revalidation Log', 'on-demand-revalidation' ),
-					'callback' => array( \OnDemandRevalidation\TaxonomyRevalidation::class, 'render_revalidation_log' ),
-				)
-			);
 
 		endif;
 
